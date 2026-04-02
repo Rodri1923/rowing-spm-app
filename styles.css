@@ -1,0 +1,118 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+:root {
+  --bg: hsl(220, 15%, 5%);
+  --text: hsl(0, 0%, 96%);
+  --muted: hsl(220, 10%, 50%);
+
+  --red: hsl(4, 100%, 59%);
+  --yellow: hsl(45, 100%, 50%);
+  --green: hsl(142, 69%, 49%);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+#app {
+  text-align: center;
+  width: 100%;
+  padding: 0 16px;
+}
+
+/* Círculo */
+#circle {
+  width: 50vw;
+  height: 50vw;
+  max-width: 280px;
+  max-height: 280px;
+
+  border-radius: 50%;
+  border: 2px solid hsl(220, 10%, 18%);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  margin: 0 auto;
+
+  transition: all 0.3s ease;
+}
+
+/* Número */
+#spm-display {
+  font-size: clamp(3.5rem, 18vw, 9rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  transition: all 0.2s ease;
+}
+
+/* Unidad */
+#unit {
+  margin-top: 10px;
+  font-size: clamp(0.6rem, 2.2vw, 0.8rem);
+  letter-spacing: 0.25em;
+  color: var(--muted);
+}
+
+/* Estado */
+#status {
+  margin-top: 14px;
+  font-size: clamp(0.75rem, 2.8vw, 1rem);
+  letter-spacing: 0.12em;
+}
+
+/* Ayuda (siempre visible, pero discreta) */
+#help {
+  margin-top: 18px;
+  font-size: clamp(0.6rem, 2.2vw, 0.8rem);
+  color: var(--muted);
+  line-height: 1.4;
+  opacity: 0.6;
+}
+
+#help strong {
+  opacity: 0.8;
+}
+
+#help p {
+  margin: 3px 0;
+}
+
+/* Colores */
+.red {
+  color: var(--red);
+}
+
+.yellow {
+  color: var(--yellow);
+}
+
+.green {
+  color: var(--green);
+}
+
+/* Glow */
+.red-glow {
+  box-shadow: 0 0 60px hsl(4, 100%, 59%, 0.3);
+}
+
+.yellow-glow {
+  box-shadow: 0 0 60px hsl(45, 100%, 50%, 0.3);
+}
+
+.green-glow {
+  box-shadow: 0 0 60px hsl(142, 69%, 49%, 0.3);
+}

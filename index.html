@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SPM</title>
+
+  <meta name="theme-color" content="#000000">
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <main id="app">
+    <div id="circle">
+      <div id="spm-display" class="red">--</div>
+    </div>
+
+    <div id="unit">REMADAS/MIN</div>
+    <div id="status">Toca para empezar</div>
+
+    <div id="help">
+      <p><strong>Cómo usar:</strong></p>
+      <p>• Tocá la pantalla cada remada</p>
+      <p>• Ritmo constante = mejor precisión</p>
+      <p>• Doble tap para reiniciar</p>
+      <p>• Aguante el CCR</p>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js");
+    }
+  </script>
+</body>
+</html>
