@@ -12,13 +12,25 @@
 <body>
 
   <main id="app">
+    
+    <!-- CÍRCULO PRINCIPAL -->
     <div id="circle">
+      
+      <!-- ONDA EXPANSIVA -->
+      <div class="ripple"></div>
+
+      <!-- DISPLAY SPM -->
       <div id="spm-display" class="red">--</div>
+
     </div>
 
+    <!-- UNIDAD -->
     <div id="unit">REMADAS/MIN</div>
-    <div id="status">Toca para empezar</div>
 
+    <!-- ESTADO -->
+    <div id="status">Esperando medida</div>
+
+    <!-- INSTRUCCIONES -->
     <div id="help">
       <p><strong>Cómo usar:</strong></p>
       <p>• Tocá la pantalla cada remada</p>
@@ -26,6 +38,7 @@
       <p>• Doble tap para reiniciar</p>
       <p>• Aguante el CCR</p>
     </div>
+
   </main>
 
   <script src="app.js"></script>
@@ -35,5 +48,6 @@
       navigator.serviceWorker.register("sw.js");
     }
   </script>
+
 </body>
 </html>

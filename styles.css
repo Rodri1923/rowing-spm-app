@@ -32,7 +32,11 @@ body {
   padding: 0 16px;
 }
 
-/* Círculo */
+
+/* =============================
+   CÍRCULO
+============================= */
+
 #circle {
   width: 50vw;
   height: 50vw;
@@ -48,18 +52,74 @@ body {
 
   margin: 0 auto;
 
+  position: relative;
+
+  overflow: visible; /* 🔥 clave: permite que la onda salga hacia afuera */
+
   transition: all 0.3s ease;
 }
 
-/* Número */
+
+/* =============================
+   ONDA EXPANSIVA (CORRECTA)
+============================= */
+
+.ripple {
+  position: absolute;
+  inset: 0; /* ocupa exactamente el tamaño del círculo */
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* animación */
+.ripple.active {
+  animation: ripple-out 0.9s ease-out;
+}
+
+@keyframes ripple-out {
+  0% {
+    transform: scale(1);   /* arranca en el borde */
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.2); /* 🔥 más grande, más visible */
+    opacity: 0;
+  }
+}
+
+/* color por estado */
+.red .ripple {
+  border: 3px solid hsla(4, 100%, 59%, 0.6);
+}
+
+.yellow .ripple {
+  border: 3px solid hsla(45, 100%, 50%, 0.6);
+}
+
+.green .ripple {
+  border: 3px solid hsla(142, 69%, 49%, 0.6);
+}
+
+
+/* =============================
+   NÚMERO
+============================= */
+
 #spm-display {
   font-size: clamp(3.5rem, 18vw, 9rem);
   font-weight: 900;
   letter-spacing: -0.03em;
   transition: all 0.2s ease;
+  position: relative;
+  z-index: 2;
 }
 
-/* Unidad */
+
+/* =============================
+   TEXTO
+============================= */
+
 #unit {
   margin-top: 10px;
   font-size: clamp(0.6rem, 2.2vw, 0.8rem);
@@ -67,14 +127,12 @@ body {
   color: var(--muted);
 }
 
-/* Estado */
 #status {
   margin-top: 14px;
   font-size: clamp(0.75rem, 2.8vw, 1rem);
   letter-spacing: 0.12em;
 }
 
-/* Ayuda (siempre visible, pero discreta) */
 #help {
   margin-top: 18px;
   font-size: clamp(0.6rem, 2.2vw, 0.8rem);
@@ -91,7 +149,11 @@ body {
   margin: 3px 0;
 }
 
-/* Colores */
+
+/* =============================
+   COLORES
+============================= */
+
 .red {
   color: var(--red);
 }
@@ -104,7 +166,11 @@ body {
   color: var(--green);
 }
 
-/* Glow */
+
+/* =============================
+   GLOW
+============================= */
+
 .red-glow {
   box-shadow: 0 0 60px hsl(4, 100%, 59%, 0.3);
 }
