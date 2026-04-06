@@ -1,4 +1,8 @@
-const CACHE_NAME = "spm-app-v3"; // 🔥 cambiá versión cuando actualices
+// =============================
+// CONFIG
+// =============================
+
+const CACHE_NAME = "spm-app";
 
 const ASSETS = [
   "./",
@@ -13,7 +17,7 @@ const ASSETS = [
 // =============================
 
 self.addEventListener("install", (event) => {
-  self.skipWaiting(); // 🔥 activa inmediatamente
+  self.skipWaiting();
 
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -33,25 +37,37 @@ self.addEventListener("activate", (event) => {
       Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
-            return caches.delete(key); // 🔥 borra versiones viejas
+            return caches.delete(key);
           }
         })
       )
     )
   );
 
-  self.clients.claim(); // toma control inmediato
+  self.clients.claim();
 });
 
 
 // =============================
-// FETCH → offline-first
+// FETCH → cache + actualización automática
 // =============================
 
 self.addEventListener("fetch", (event) => {
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
+    caches.open(CACHE_NAME).then((cache) =>
+      cache.match(event.request).then((cachedResponse) => {
+
+        // Siempre intenta traer versión nueva en segundo plano
+        const fetchPromise = fetch(event.request)
+          .then((networkResponse) => {
+            cache.put(event.request, networkResponse.clone());
+            return networkResponse;
+          })
+          .catch(() => cachedResponse);
+
+        // Responde rápido con cache (si existe)
+        return cachedResponse || fetchPromise;
+      })
+    )
   );
 });

@@ -2,10 +2,11 @@
 // ELEMENTOS DEL DOM
 // =============================
 
-const display = document.getElementById("spm-display"); // número grande
-const status = document.getElementById("status");       // texto de estado
-const circle = document.getElementById("circle");       // contenedor visual
-const ripple = document.querySelector(".ripple");       // onda expansiva
+const display = document.getElementById("spm-display");
+const status = document.getElementById("status");
+const circle = document.getElementById("circle");
+const ripple = document.querySelector(".ripple");
+const vibrationBtn = document.getElementById("vibration-toggle");
 
 
 // =============================
@@ -33,6 +34,32 @@ const AUTO_RESET_TIME = 30000;
 
 
 // =============================
+// VIBRACIÓN
+// =============================
+
+let vibrationEnabled = localStorage.getItem("vibration") !== "off";
+updateVibrationUI();
+
+function updateVibrationUI() {
+  if (!vibrationBtn) return;
+
+  vibrationBtn.textContent = vibrationEnabled ? "VIB ON" : "VIB OFF";
+  vibrationBtn.classList.toggle("off", !vibrationEnabled);
+}
+
+if (vibrationBtn) {
+  vibrationBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    vibrationEnabled = !vibrationEnabled;
+    localStorage.setItem("vibration", vibrationEnabled ? "on" : "off");
+
+    updateVibrationUI();
+  });
+}
+
+
+// =============================
 // EVENTO PRINCIPAL
 // =============================
 
@@ -46,27 +73,23 @@ document.body.addEventListener("click", handleTap);
 function handleTap() {
   const now = Date.now();
 
-  // =============================
-  // FEEDBACK VISUAL (ONDA)
-  // =============================
-
+  // Ripple
   ripple.classList.remove("active");
-  void ripple.offsetWidth; // reinicia animación
+  void ripple.offsetWidth;
   ripple.classList.add("active");
 
   // Vibración
-  if (navigator.vibrate) {
-    navigator.vibrate(30);
+  if (vibrationEnabled && navigator.vibrate) {
+    navigator.vibrate(20);
   }
 
-  // Doble tap → reset
+  // Double tap → reset
   if (now - lastTapTimestamp < DOUBLE_TAP_THRESHOLD) {
     reset();
     return;
   }
   lastTapTimestamp = now;
 
-  // Primer tap
   if (!lastTapTime) {
     lastTapTime = now;
     status.textContent = "Midiendo...";
@@ -74,31 +97,26 @@ function handleTap() {
     return;
   }
 
-  // Tiempo entre taps
   const delta = (now - lastTapTime) / 1000;
   lastTapTime = now;
 
-  // Filtros
   if (delta < 0.3) return;
   if (delta > 15) {
     reset();
     return;
   }
 
-  // Intervalos
   intervals.push(delta);
   if (intervals.length > MAX_INTERVALS) {
     intervals.shift();
   }
 
-  // SPM
   const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length;
   const spm = (60 / avg) * STROKES_PER_TAP;
   const roundedSpm = Math.round(spm);
 
   display.textContent = roundedSpm;
 
-  // Historial
   spmHistory.push(roundedSpm);
   if (spmHistory.length > STABILITY_SAMPLES) {
     spmHistory.shift();
@@ -109,7 +127,7 @@ function handleTap() {
 
 
 // =============================
-// LÓGICA DE ESTABILIDAD
+// ESTABILIDAD
 // =============================
 
 function updateState() {
@@ -120,7 +138,6 @@ function updateState() {
     return;
   }
 
-  // Cambio brusco → rompe estabilidad
   const last = spmHistory[spmHistory.length - 1];
   const prev = spmHistory[spmHistory.length - 2];
 
@@ -136,8 +153,7 @@ function updateState() {
     return;
   }
 
-  const avgSpm =
-    spmHistory.reduce((a, b) => a + b, 0) / spmHistory.length;
+  const avgSpm = spmHistory.reduce((a, b) => a + b, 0) / spmHistory.length;
 
   const withinTolerance = spmHistory.every(
     (v) => Math.abs(v - avgSpm) <= SPM_TOLERANCE
@@ -160,19 +176,16 @@ function updateState() {
 
 
 // =============================
-// UI (COLORES)
+// UI
 // =============================
 
 function setColor(color) {
-  // Texto
   display.classList.remove("red", "yellow", "green");
   display.classList.add(color);
 
-  // Glow
   circle.classList.remove("red-glow", "yellow-glow", "green-glow");
   circle.classList.add(color + "-glow");
 
-  // 🔥 CLAVE: color para ripple
   circle.classList.remove("red", "yellow", "green");
   circle.classList.add(color);
 }
