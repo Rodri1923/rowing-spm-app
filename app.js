@@ -5,8 +5,7 @@
 const display = document.getElementById("spm-display");
 const status = document.getElementById("status");
 const circle = document.getElementById("circle");
-const ripple = document.querySelector(".ripple");
-const vibrationBtn = document.getElementById("vibration-toggle");
+const ripples = document.querySelectorAll(".ripple");
 
 
 // =============================
@@ -34,29 +33,50 @@ const AUTO_RESET_TIME = 30000;
 
 
 // =============================
-// VIBRACIÓN
+// VIBRACIÓN (feedback táctil)
+// =============================
+// El entrenador mira el bote, no el teléfono: la vibración confirma
+// que el tap se registró sin necesidad de mirar la pantalla.
+// Sin toggle ni configuración: se mantiene simple a propósito.
+// Nota: iOS Safari no implementa navigator.vibrate (ninguna versión) —
+// en iPhone la app funciona igual, solo sin este feedback.
+
+const VIBRATE_TAP_MS = 15;
+const VIBRATE_RESET_PATTERN = [20, 40, 20];
+
+function vibrate(pattern) {
+  if (navigator.vibrate) navigator.vibrate(pattern);
+}
+
+
+// =============================
+// WAKE LOCK (evita que se apague la pantalla)
 // =============================
 
-let vibrationEnabled = localStorage.getItem("vibration") !== "off";
-updateVibrationUI();
+let wakeLockSentinel = null;
 
-function updateVibrationUI() {
-  if (!vibrationBtn) return;
+async function requestWakeLock() {
+  if (!("wakeLock" in navigator) || wakeLockSentinel) return;
 
-  vibrationBtn.textContent = vibrationEnabled ? "VIB ON" : "VIB OFF";
-  vibrationBtn.classList.toggle("off", !vibrationEnabled);
+  try {
+    wakeLockSentinel = await navigator.wakeLock.request("screen");
+    wakeLockSentinel.addEventListener("release", () => {
+      wakeLockSentinel = null;
+    });
+  } catch (err) {
+    // No es crítico: la app sigue funcionando igual, solo no se evita
+    // que la pantalla se apague sola (navegador sin soporte o política).
+    console.warn("Wake Lock no disponible:", err);
+  }
 }
 
-if (vibrationBtn) {
-  vibrationBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
+requestWakeLock();
 
-    vibrationEnabled = !vibrationEnabled;
-    localStorage.setItem("vibration", vibrationEnabled ? "on" : "off");
-
-    updateVibrationUI();
-  });
-}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    requestWakeLock();
+  }
+});
 
 
 // =============================
@@ -73,18 +93,19 @@ document.body.addEventListener("click", handleTap);
 function handleTap() {
   const now = Date.now();
 
-  // Ripple
-  ripple.classList.remove("active");
-  void ripple.offsetWidth;
-  ripple.classList.add("active");
+  // Por si el wake lock se liberó (ej. app en background), reintentar
+  requestWakeLock();
 
-  // Vibración
-  if (vibrationEnabled && navigator.vibrate) {
-    navigator.vibrate(20);
-  }
+  // Ripple
+  ripples.forEach(ripple => {
+    ripple.classList.remove("active");
+    void ripple.offsetWidth;
+    ripple.classList.add("active");
+  });
 
   // Double tap → reset
   if (now - lastTapTimestamp < DOUBLE_TAP_THRESHOLD) {
+    vibrate(VIBRATE_RESET_PATTERN);
     reset();
     return;
   }
@@ -92,8 +113,9 @@ function handleTap() {
 
   if (!lastTapTime) {
     lastTapTime = now;
+    vibrate(VIBRATE_TAP_MS);
     status.textContent = "Midiendo...";
-    setColor("yellow");
+    setState("warning");
     return;
   }
 
@@ -102,9 +124,11 @@ function handleTap() {
 
   if (delta < 0.3) return;
   if (delta > 15) {
+    vibrate(VIBRATE_RESET_PATTERN);
     reset();
     return;
   }
+  vibrate(VIBRATE_TAP_MS);
 
   intervals.push(delta);
   if (intervals.length > MAX_INTERVALS) {
@@ -131,10 +155,9 @@ function handleTap() {
 // =============================
 
 function updateState() {
-
   if (spmHistory.length < 2) {
     status.textContent = "Midiendo...";
-    setColor("yellow");
+    setState("warning");
     return;
   }
 
@@ -143,51 +166,57 @@ function updateState() {
 
   if (Math.abs(last - prev) > BREAK_THRESHOLD) {
     status.textContent = "Inestable";
-    setColor("yellow");
+    setState("warning");
     return;
   }
 
   if (spmHistory.length < STABILITY_SAMPLES) {
     status.textContent = "Ajustando...";
-    setColor("yellow");
+    setState("warning");
     return;
   }
 
-  const avgSpm = spmHistory.reduce((a, b) => a + b, 0) / spmHistory.length;
+  const avgSpm =
+    spmHistory.reduce((a, b) => a + b, 0) / spmHistory.length;
 
   const withinTolerance = spmHistory.every(
     (v) => Math.abs(v - avgSpm) <= SPM_TOLERANCE
   );
 
-  const max = Math.max(...spmHistory);
-  const min = Math.min(...spmHistory);
-  const range = max - min;
+  const range = Math.max(...spmHistory) - Math.min(...spmHistory);
 
   const isStable = withinTolerance && range <= RANGE_THRESHOLD;
 
   if (isStable) {
     status.textContent = "Estable";
-    setColor("green");
+    setState("active");
   } else {
     status.textContent = "Inestable";
-    setColor("yellow");
+    setState("warning");
   }
 }
 
 
 // =============================
-// UI
+// UI STATE
 // =============================
 
-function setColor(color) {
-  display.classList.remove("red", "yellow", "green");
-  display.classList.add(color);
+function setState(state) {
+  // RESET
+  circle.classList.remove("idle", "warning", "active");
+  display.classList.remove("idle", "warning", "active");
 
-  circle.classList.remove("red-glow", "yellow-glow", "green-glow");
-  circle.classList.add(color + "-glow");
+  circle.classList.remove("idle-glow", "warning-glow", "active-glow");
 
-  circle.classList.remove("red", "yellow", "green");
-  circle.classList.add(color);
+  // APPLY
+  circle.classList.add(state);
+  circle.classList.add(state + "-glow");
+
+  display.classList.add(state);
+
+  // IMPORTANTE: sincronizar ripple state base
+  document.body.classList.remove("idle", "warning", "active");
+  document.body.classList.add(state);
 }
 
 
@@ -200,9 +229,10 @@ function reset() {
   intervals = [];
   spmHistory = [];
 
-  display.textContent = "--";
+  display.textContent = "CCR";
   status.textContent = "Esperando medida";
-  setColor("red");
+
+  setState("idle");
 }
 
 

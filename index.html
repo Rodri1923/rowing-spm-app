@@ -7,42 +7,39 @@
 
   <meta name="theme-color" content="#000000">
 
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="assets/icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SPM">
+
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
 
   <main id="app">
-    
-    <!-- CÍRCULO PRINCIPAL -->
+
     <div id="circle">
-      
-      <!-- ONDA EXPANSIVA -->
-      <div class="ripple"></div>
-
-      <!-- DISPLAY SPM -->
-      <div id="spm-display" class="red">--</div>
-
+      <div class="ripple ripple-1"></div>
+      <div class="ripple ripple-2"></div>
+      <div class="ripple ripple-3"></div>
+      <div id="spm-display" class="idle">CCR</div>
     </div>
 
-    <!-- UNIDAD -->
     <div id="unit">REMADAS/MIN</div>
 
-    <!-- ESTADO -->
     <div id="status">Esperando medida</div>
 
-    <!-- INSTRUCCIONES -->
     <div id="help">
       <p><strong>Cómo usar:</strong></p>
       <p>• Tocá la pantalla cada remada</p>
       <p>• Ritmo constante = mejor precisión</p>
       <p>• Doble tap para reiniciar</p>
-      <p>• Aguante el CCR</p>
     </div>
 
   </main>
-
-  <!-- 🔥 BOTÓN FUERA DEL MAIN (correcto para fixed) -->
-  <button id="vibration-toggle"></button>
 
   <script src="app.js"></script>
 
