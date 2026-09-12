@@ -1,146 +1,49 @@
-# 🚣‍♂️ SPM Tracker – Rowing Stroke Rate Tool
+# 🚣 SPM Tracker — Rowing Stroke Rate Tool
 
-Aplicación web simple y precisa para medir **SPM (strokes per minute)** en remo en tiempo real, diseñada específicamente para entrenadores que siguen botes desde una lancha.
+🌍 **[English](README.md) · [Español](README.es.md)**
 
----
+> Simple, precise web app to measure strokes per minute (SPM) in rowing in real time, built for coaches following boats from a launch.
 
-## 🎯 Propósito
+🔗 **Live demo:** https://rodri1923.github.io/rowing-spm-app/
 
-Esta herramienta permite calcular el ritmo de remada de un remero mediante taps en pantalla.
+## 📋 Overview
+A field-use tool: the coach taps the screen on every stroke, and the app converts the interval between taps into SPM and evaluates how stable the rhythm is. Built to work reliably outdoors, one-handed, on a moving boat, in full sunlight.
 
-Está optimizada para condiciones reales de uso:
+## 🚀 Features
+- Real-time SPM calculation from screen taps
+- Automatic rhythm classification: Measuring → Adjusting → Unstable → Stable
+- Scrollable, real-time history chart with dynamic scale
+- High-contrast UI designed for outdoor visibility
+- Offline support via Service Worker
 
-* 📱 Uso con una sola mano
-* 🚤 Movimiento constante (lancha)
-* ☀️ Alta luminosidad (exterior)
-* ⚡ Feedback inmediato y claro
+## 🧱 Tech Stack
+- HTML5 / CSS3
+- Vanilla JavaScript
+- Canvas API (chart rendering)
+- Service Worker (offline / caching)
+- GitHub Pages (deploy)
 
----
-
-## ⚙️ Cómo funciona
-
-1. Tocá la pantalla en cada remada del remero
-2. La app calcula el tiempo entre taps
-3. Convierte ese intervalo en SPM
-4. Evalúa la estabilidad del ritmo
-
----
-
-## 📊 Estados del sistema
-
-La app clasifica automáticamente el ritmo:
-
-* **Midiendo** → pocos datos
-* **Ajustando** → todavía no es estable
-* **Inestable** → variaciones grandes
-* **Estable** → ritmo consistente dentro de tolerancia
-
-Cada estado se refleja con color y feedback visual.
-
----
-
-## 📈 Historial
-
-* Gráfico horizontal en tiempo real
-* Scrollable
-* Colores según estado
-* Escala dinámica (mínimo ↔ máximo)
-
-Permite ver tendencia sin sobrecargar la pantalla.
-
----
-
-## 🎨 UX / Diseño
-
-* Círculo central como zona de interacción
-* Número SPM grande y legible
-* Logo del club en estado idle
-* Animaciones:
-
-  * Pulso en espera
-  * Onda expansiva en cada tap
-* Alto contraste para uso al aire libre
-
----
-
-## 🧱 Stack técnico
-
-* HTML5
-* CSS3
-* JavaScript (Vanilla)
-* Canvas API (gráfico)
-* Service Worker (modo offline / cache)
-* Deploy: GitHub Pages
-
----
-
-## 📁 Estructura del proyecto
-
-```id="proj-structure"
-/
-├── index.html
-├── styles.css
-├── app.js
-├── sw.js
-└── assets/
-    └── logo.png
+## 📁 Project Structure
+```
+index.html
+styles.css
+app.js
+sw.js
+assets/
+  logo.png
 ```
 
----
+## ▶️ Getting Started
+Open `index.html` in a browser, or serve it locally:
+```bash
+npx http-server .
+```
 
-## 🌐 Deploy
+## ⚠️ Limitations
+- Accuracy depends on how precisely the user taps
+- Not a replacement for physical sensors
+- Optimized for short sessions with immediate feedback, not long-term data logging
 
-La app está desplegada en **GitHub Pages**.
-
-⚠️ Nota sobre cache:
-
-* Se utiliza Service Worker
-* Si los cambios no se reflejan:
-
-  * Hard refresh (Ctrl + Shift + R)
-  * O cambiar `CACHE_NAME` en `sw.js`
-
----
-
-## 🚀 Uso recomendado
-
-* Posicionarse con buena visibilidad del bote
-* Tapear cada remada de un mismo remero
-* Mantener ritmo constante de taps
-* Leer el estado (estable/inestable) para validar medición
-
----
-
-## ⚠️ Limitaciones
-
-* Depende de la precisión del usuario al tapear
-* No reemplaza sensores físicos
-* Optimizada para sesiones cortas y feedback inmediato
-
----
-
-## 🔧 Desarrollo
-
-Reglas del proyecto:
-
-* Mantener simplicidad
-* No agregar features innecesarias
-* Priorizar claridad y velocidad de uso
-* No romper lógica de estados
-
----
-
-## 📌 Roadmap (opcional)
-
-* Mejoras en feedback visual
-* Ajustes finos de estabilidad
-* Optimización del gráfico
-* Ajustes UX en condiciones extremas
-
----
-
-## 👤 Autor
-
-Desarrollado como herramienta práctica para entrenamiento de remo en campo real.
-
----
+## 👤 Author
+**Rodrigo Navone**
+[GitHub](https://github.com/Rodri1923) · [LinkedIn](https://www.linkedin.com/in/rodrigonavone)
