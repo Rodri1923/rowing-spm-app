@@ -612,6 +612,35 @@ body.alert #chart-points circle { fill: var(--alert); }
   opacity: 0.9;
 }
 
+#install-link {
+  display: inline-block;
+  margin: 0 auto;
+  padding: 6px 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: "Oswald", sans-serif;
+  letter-spacing: 0.03em;
+  color: var(--active);
+  background: none;
+  border: none;
+  opacity: 0.9;
+}
+
+#install-hint {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+/* El "display" propio de arriba tiene más especificidad que el [hidden]
+   por defecto del navegador y lo pisa — se refuerza explícitamente
+   (mismo problema que ya apareció con los íconos de tema). */
+#install-link[hidden],
+#install-hint[hidden] {
+  display: none;
+}
+
 /* =============================
    VISTA DE GRABACIÓN
 ============================= */

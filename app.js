@@ -20,6 +20,8 @@ const sessionView = document.getElementById("session-view");
 const sessionViewTitle = document.getElementById("session-view-title");
 const sessionSvg = document.getElementById("session-svg");
 const promoBanner = document.getElementById("promo-banner");
+const installLink = document.getElementById("install-link");
+const installHint = document.getElementById("install-hint");
 
 
 // =============================
@@ -445,6 +447,52 @@ themeToggleBtn.addEventListener("click", (e) => {
 if (promoBanner) {
   promoBanner.addEventListener("click", (e) => e.stopPropagation());
 }
+
+
+// =============================
+// INSTALAR LA APP (Agregar a inicio)
+// =============================
+// Android/Chrome exponen "beforeinstallprompt": se puede disparar el
+// diálogo nativo de instalación con un botón. iOS Safari no tiene esa
+// API — ahí no hay forma de instalar con un solo tap, así que se
+// muestran los pasos manuales en su lugar.
+
+const isStandalone =
+  window.matchMedia("(display-mode: standalone)").matches ||
+  window.navigator.standalone === true;
+
+const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+let deferredInstallPrompt = null;
+
+if (!isStandalone) {
+  if (isIos) {
+    // No hay prompt programático en iOS: se deja la instrucción manual.
+    installHint.hidden = false;
+  } else {
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      installLink.hidden = false;
+    });
+  }
+}
+
+installLink.addEventListener("click", async (e) => {
+  e.stopPropagation(); // no debe contar como tap de remada
+  if (!deferredInstallPrompt) return;
+
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  // El prompt nativo solo se puede usar una vez
+  deferredInstallPrompt = null;
+  installLink.hidden = true;
+});
+
+window.addEventListener("appinstalled", () => {
+  installLink.hidden = true;
+  installHint.hidden = true;
+});
 
 
 // =============================
