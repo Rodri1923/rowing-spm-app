@@ -62,7 +62,6 @@ const RATE_MAX_BOUND = 70;
 const RATE_MIN_SPREAD = 6;
 const MAX_REALISTIC_SPM = 65; // por encima de esto, es una lectura inválida
 
-const LONG_PRESS_MS = 600;
 const RECORDING_KEY = "spm_recording";
 
 
@@ -132,39 +131,12 @@ if (splash) {
 
 
 // =============================
-// EVENTO PRINCIPAL (tap normal vs. mantener presionado)
+// EVENTO PRINCIPAL
 // =============================
-// Un tap corto cuenta una remada. Mantener presionado (en cualquier lugar)
-// prende/apaga la grabación de una serie — un gesto extra, sin agregar
-// botones nuevos en pantalla. El click que dispara el navegador al soltar
-// una presión larga se descarta para que no cuente como remada de más.
+// Un tap cuenta una remada. La grabación se prende/apaga solo con el
+// botón REC (ver más abajo) — no hay gesto oculto de por medio.
 
-let pressTimer = null;
-let longPressTriggered = false;
-
-document.body.addEventListener("pointerdown", () => {
-  longPressTriggered = false;
-  pressTimer = setTimeout(() => {
-    longPressTriggered = true;
-    toggleRecording();
-  }, LONG_PRESS_MS);
-});
-
-document.body.addEventListener("pointerup", () => {
-  clearTimeout(pressTimer);
-});
-
-document.body.addEventListener("pointercancel", () => {
-  clearTimeout(pressTimer);
-});
-
-document.body.addEventListener("click", () => {
-  if (longPressTriggered) {
-    longPressTriggered = false;
-    return;
-  }
-  handleTap();
-});
+document.body.addEventListener("click", handleTap);
 
 
 // =============================
@@ -420,6 +392,7 @@ const THEME_KEY = "theme";
 
 function applyTheme(theme) {
   document.documentElement.setAttribute("data-theme", theme);
+  themeToggleBtn.setAttribute("aria-pressed", String(theme === "dark"));
 
   // En oscuro se ofrece pasar a claro (ícono sol) y viceversa (ícono luna).
   // Nota: en <svg> la propiedad .hidden no siempre se refleja al atributo
@@ -508,10 +481,12 @@ function toggleRecording() {
     recordingSeries = [];
     recordingStartTs = Date.now();
     recordBtn.classList.add("recording");
+    recordBtn.setAttribute("aria-pressed", "true");
     vibrate(VIBRATE_RECORD_START);
   } else {
     isRecording = false;
     recordBtn.classList.remove("recording");
+    recordBtn.setAttribute("aria-pressed", "false");
     vibrate(VIBRATE_RECORD_STOP);
     saveRecording();
   }
@@ -539,8 +514,11 @@ function saveRecording() {
 // =============================
 
 function formatDuration(totalSeconds) {
-  const m = Math.floor(totalSeconds / 60);
-  const s = Math.round(totalSeconds % 60);
+  // Redondear una sola vez antes de separar minutos/segundos — si no,
+  // un caso como 119.6s podía mostrar "1:60" en vez de "2:00".
+  const rounded = Math.round(totalSeconds);
+  const m = Math.floor(rounded / 60);
+  const s = rounded % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
@@ -628,10 +606,6 @@ recordBtn.addEventListener("click", (e) => {
 
 chartCard.addEventListener("click", (e) => {
   e.stopPropagation(); // no debe contar como tap de remada
-  if (longPressTriggered) {
-    longPressTriggered = false;
-    return;
-  }
   if (!isRecording) openSessionView();
 });
 

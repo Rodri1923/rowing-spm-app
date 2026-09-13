@@ -70,7 +70,11 @@ self.addEventListener("fetch", (event) => {
             cache.put(event.request, networkResponse.clone());
             return networkResponse;
           })
-          .catch(() => cachedResponse);
+          .catch(
+            () =>
+              cachedResponse ||
+              new Response("Offline", { status: 503, statusText: "Offline" })
+          );
 
         // Responde rápido con cache (si existe)
         return cachedResponse || fetchPromise;

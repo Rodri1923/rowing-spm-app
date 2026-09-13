@@ -32,7 +32,7 @@
 
   <img id="brand-logo" src="assets/logo-wordmark.png" alt="Logo del club">
 
-  <button id="theme-toggle" aria-label="Cambiar tema">
+  <button id="theme-toggle" type="button" aria-label="Cambiar tema">
     <svg id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden>
       <circle cx="12" cy="12" r="4"></circle>
       <line x1="12" y1="2" x2="12" y2="4.5"></line>
@@ -68,7 +68,7 @@
 
     <div class="glass-card chart-card" id="chart-card">
       <div class="chart-header">
-        <button id="record-btn" aria-label="Grabar una serie">
+        <button id="record-btn" type="button" aria-label="Grabar una serie" aria-pressed="false">
           <span id="record-dot"></span>
           REC
         </button>
@@ -98,14 +98,14 @@
     <div id="help">
       <p><strong>Cómo usar</strong></p>
       <p>Tocá cada remada · Doble tap reinicia</p>
-      <p>Botón REC (o mantené presionado) graba · Tocá el gráfico para verla</p>
+      <p>Botón REC graba una serie · Tocá el gráfico para verla</p>
     </div>
 
     <a id="promo-banner" href="https://www.instagram.com/clubcoloniarowing/?hl=es" target="_blank" rel="noopener noreferrer">
       Conocé el mejor club de remo del mundo →
     </a>
 
-    <button id="install-link" hidden>Instalar la app en el celular →</button>
+    <button id="install-link" type="button" hidden>Agregar la app a la pantalla de inicio →</button>
     <div id="install-hint" hidden>Para instalarla: tocá compartir → "Agregar a inicio"</div>
 
   </main>
