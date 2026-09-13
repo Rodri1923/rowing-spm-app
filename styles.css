@@ -6,30 +6,366 @@
 }
 
 :root {
-  --bg: hsl(220, 15%, 5%);
-  --text: hsl(0, 0%, 96%);
-  --muted: hsl(220, 10%, 50%);
+  --text: rgba(255, 255, 255, 0.92);
+  --muted: rgba(255, 255, 255, 0.45);
 
-  --red: hsl(4, 100%, 59%);
-  --yellow: hsl(45, 100%, 50%);
-  --green: hsl(142, 69%, 49%);
+  /* =========================
+     STATE COLORS (CORE)
+  ========================= */
+  --idle: hsl(222, 60%, 38%); /* azul de marca del logo del club (#274A9C) */
+  --warning: hsl(42, 100%, 62%);
+  --active: hsl(142, 60%, 55%);
+  --alert: hsl(0, 85%, 55%); /* lectura fuera de rango humano (>65 SPM) */
+
+  /* derived soft variants */
+  --idle-soft: color-mix(in srgb, var(--idle) 35%, transparent);
+  --warning-soft: color-mix(in srgb, var(--warning) 35%, transparent);
+  --active-soft: color-mix(in srgb, var(--active) 35%, transparent);
+
+  /* glow variants — mezclados hacia transparente (no hacia blanco) para que
+     el halo se vea bien tanto en tema oscuro como en tema claro */
+  --idle-glow: color-mix(in srgb, var(--idle) 45%, transparent);
+  --warning-glow: color-mix(in srgb, var(--warning) 35%, transparent);
+  --active-glow: color-mix(in srgb, var(--active) 35%, transparent);
+
+  /* =========================
+     TOKENS DE TEMA (oscuro = default)
+  ========================= */
+  --bg-base-1: hsl(220, 35%, 4%);
+  --bg-base-2: hsl(220, 45%, 2%);
+
+  --circle-inset: rgba(0, 0, 0, 0.85);
+  --circle-sheen-1: rgba(255, 255, 255, 0.03);
+  --circle-sheen-2: rgba(255, 255, 255, 0.01);
+
+  --grid-line: rgba(255, 255, 255, 0.08);
+
+  /* halos ambientales de fondo (look "vidrio esmerilado") */
+  --blob-1: rgba(39, 74, 156, 0.40);
+  --blob-2: rgba(39, 74, 156, 0.22);
+  --blob-3: rgba(60, 190, 140, 0.10);
+
+  /* tarjetas de vidrio — poco transparentes a propósito: el glassmorphism
+     clásico se lava con sol directo, así que la base es un navy sólido-ish
+     y el blur solo suma profundidad, no reemplaza el contraste */
+  --card-bg: rgba(14, 22, 42, 0.62);
+  --card-border: rgba(255, 255, 255, 0.14);
+  --card-highlight: rgba(255, 255, 255, 0.07);
+  --card-shadow: 0 10px 34px rgba(0, 0, 0, 0.4);
 }
 
+/* Tema claro — se activa con html[data-theme="light"] */
+html[data-theme="light"] {
+  --warning: hsl(36, 90%, 40%); /* ámbar oscuro: el amarillo original es ilegible sobre blanco */
+  --active: hsl(142, 65%, 30%); /* verde bosque: el verde original pierde contraste sobre blanco */
+
+  --text: hsl(220, 25%, 14%);
+  --muted: hsl(220, 12%, 40%);
+
+  --bg-base-1: hsl(210, 45%, 97%);
+  --bg-base-2: hsl(210, 30%, 99%);
+
+  --circle-inset: rgba(30, 40, 60, 0.10);
+  --circle-sheen-1: rgba(0, 0, 0, 0.035);
+  --circle-sheen-2: rgba(0, 0, 0, 0.012);
+
+  --grid-line: rgba(20, 30, 50, 0.10);
+
+  --blob-1: rgba(39, 74, 156, 0.16);
+  --blob-2: rgba(39, 74, 156, 0.09);
+  --blob-3: rgba(30, 160, 120, 0.07);
+
+  --card-bg: rgba(255, 255, 255, 0.58);
+  --card-border: rgba(255, 255, 255, 0.75);
+  --card-highlight: rgba(255, 255, 255, 0.9);
+  --card-shadow: 0 10px 28px rgba(20, 30, 55, 0.12);
+}
+
+/* =============================
+   FUENTE (autohospedada, sin depender de red)
+============================= */
+
+@font-face {
+  font-family: "Oswald";
+  src: url("./assets/fonts/oswald-latin-variable.woff2") format("woff2");
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* =============================
+   BACKGROUND
+============================= */
+
 body {
-  background: var(--bg);
+  background:
+    radial-gradient(circle at 12% 10%, var(--blob-1), transparent 45%),
+    radial-gradient(circle at 88% 20%, var(--blob-2), transparent 50%),
+    radial-gradient(circle at 50% 100%, var(--blob-3), transparent 60%),
+    linear-gradient(
+      180deg,
+      var(--bg-base-1),
+      var(--bg-base-2)
+    );
+
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+
+  font-family: "Oswald", -apple-system, BlinkMacSystemFont, "SF Pro Display",
+    "SF Pro Text", sans-serif;
+  font-weight: 500;
+
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
+
+  /* Evita el zoom nativo por doble-tap (choca con el doble-tap de reset)
+     y el delay sintético de click en navegadores móviles */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+body.alert {
+  background: linear-gradient(180deg, hsl(0, 80%, 40%), hsl(0, 85%, 25%));
+}
+
+body.alert #unit,
+body.alert #status,
+body.alert #help {
+  color: rgba(255, 255, 255, 0.92);
 }
 
 #app {
   text-align: center;
   width: 100%;
-  padding: 0 16px;
+  max-width: 380px;
+  margin: 0 auto;
+  padding: 0 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+#page-title {
+  font-family: "Oswald", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* =============================
+   TARJETAS DE VIDRIO
+============================= */
+
+.glass-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 32px;
+  box-shadow: var(--card-shadow), inset 0 1px 0 var(--card-highlight);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.hero-card {
+  position: relative;
+  padding: 22px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chart-card {
+  padding: 18px 16px 14px;
+}
+
+/* el gráfico se puede tocar para ver la última grabación guardada */
+#chart-card {
+  cursor: pointer;
+}
+
+/* =============================
+   SPLASH DE BIENVENIDA
+============================= */
+/* Corta (~1.8s), sin assets nuevos: reutiliza el mismo lenguaje de ondas
+   de agua que ya usan las ripples del círculo, con el logo del club
+   surgiendo en el medio — referencia directa a remo + agua. */
+
+#splash {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* mismo fondo que el body, para que no se note el corte al desvanecerse */
+  background:
+    radial-gradient(circle at 12% 10%, var(--blob-1), transparent 45%),
+    radial-gradient(circle at 88% 20%, var(--blob-2), transparent 50%),
+    radial-gradient(circle at 50% 100%, var(--blob-3), transparent 60%),
+    linear-gradient(180deg, var(--bg-base-1), var(--bg-base-2));
+  pointer-events: none;
+  animation: splash-fade-out 0.5s ease 1.9s forwards;
+}
+
+.splash-rings {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#splash-logo {
+  position: relative;
+  z-index: 1;
+  width: clamp(120px, 34vw, 180px);
+  height: auto;
+  opacity: 0;
+  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--idle) 55%, transparent));
+  animation: splash-logo-in 0.6s ease 0.2s forwards;
+}
+
+.splash-ripple {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 90px;
+  height: 90px;
+  border: 2px solid var(--idle-soft);
+  border-radius: 50%;
+  opacity: 0;
+  animation: splash-ripple-out 1.3s ease-out infinite;
+}
+
+.splash-ripple-2 { animation-delay: 0.35s; }
+.splash-ripple-3 { animation-delay: 0.7s; }
+
+#splash-club {
+  position: relative;
+  z-index: 1;
+  margin-top: 18px;
+  font-family: "Oswald", sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  opacity: 0;
+  animation: splash-text-in 0.5s ease 0.6s forwards;
+}
+
+#splash-tagline {
+  position: relative;
+  z-index: 1;
+  margin-top: 4px;
+  font-family: "Oswald", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0;
+  animation: splash-text-in 0.5s ease 0.95s forwards;
+}
+
+@keyframes splash-logo-in {
+  0% { opacity: 0; transform: scale(0.85) translateY(6px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes splash-text-in {
+  0% { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes splash-ripple-out {
+  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0.5; }
+  100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+}
+
+@keyframes splash-fade-out {
+  to { opacity: 0; visibility: hidden; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #splash {
+    animation: none;
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* =============================
+   LOGO DE MARCA
+============================= */
+
+#brand-logo {
+  position: fixed;
+  top: 12px;
+  left: 14px;
+  width: clamp(76px, 21vw, 108px);
+  height: auto;
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--idle) 55%, transparent));
+  z-index: 10;
+}
+
+/* =============================
+   INDICADOR DE GRABACIÓN
+============================= */
+
+#rec-indicator {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--alert);
+  animation: rec-blink 1.2s infinite;
+}
+
+@keyframes rec-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* =============================
+   BOTÓN DE TEMA
+============================= */
+
+#theme-toggle {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+#theme-toggle svg {
+  width: 19px;
+  height: 19px;
+}
+
+#theme-toggle svg[hidden] {
+  display: none;
 }
 
 /* =============================
@@ -37,13 +373,13 @@ body {
 ============================= */
 
 #circle {
-  width: 50vw;
-  height: 50vw;
-  max-width: 280px;
-  max-height: 280px;
+  width: 52vw;
+  height: 52vw;
+  max-width: 290px;
+  max-height: 290px;
 
   border-radius: 50%;
-  border: 2px solid hsl(220, 10%, 18%);
+  border: 2px solid var(--idle);
 
   display: flex;
   justify-content: center;
@@ -54,11 +390,25 @@ body {
   position: relative;
   overflow: visible;
 
-  transition: all 0.3s ease;
+  background: radial-gradient(
+    circle at 30% 30%,
+    var(--circle-sheen-1),
+    var(--circle-sheen-2) 60%,
+    transparent 100%
+  );
+
+  box-shadow:
+    inset 0 0 40px var(--circle-inset);
+
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#circle.alert {
+  border-color: #ffffff;
 }
 
 /* =============================
-   ONDA EXPANSIVA
+   RIPPLE
 ============================= */
 
 .ripple {
@@ -70,122 +420,386 @@ body {
 }
 
 .ripple.active {
-  animation: ripple-out 0.9s ease-out;
+  animation: ripple-out 0.8s ease-out;
 }
 
 @keyframes ripple-out {
-  0% {
-    transform: scale(1);
-    opacity: 0.7;
-  }
-  100% {
-    transform: scale(2.2);
-    opacity: 0;
-  }
+  0% { transform: scale(1); opacity: 0.35; }
+  100% { transform: scale(2.1); opacity: 0; }
 }
 
-.red .ripple {
-  border: 3px solid hsla(4, 100%, 59%, 0.6);
+/* ripple states */
+#circle.idle .ripple {
+  border: 2px solid var(--idle-soft);
 }
 
-.yellow .ripple {
-  border: 3px solid hsla(45, 100%, 50%, 0.6);
+#circle.warning .ripple {
+  border: 2px solid var(--warning-soft);
 }
 
-.green .ripple {
-  border: 3px solid hsla(142, 69%, 49%, 0.6);
+#circle.active .ripple {
+  border: 2px solid var(--active-soft);
+}
+
+#circle.alert .ripple {
+  border: 2px solid rgba(255, 255, 255, 0.5);
 }
 
 /* =============================
-   NÚMERO
+   GRÁFICO SPM / TIEMPO
+============================= */
+
+#chart {
+  width: 100%;
+}
+
+.chart-plot {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.chart-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 26px;
+  flex-shrink: 0;
+  padding: 2px 0;
+  font-size: 0.65rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  text-align: right;
+}
+
+#chart-svg {
+  flex: 1;
+  min-width: 0;
+  height: 130px;
+  display: block;
+  overflow: visible;
+}
+
+.chart-x-axis {
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 0 0 34px;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.chart-gridline {
+  stroke: var(--grid-line);
+  stroke-width: 1;
+}
+
+#chart-area {
+  stroke: none;
+  transition: fill 0.2s ease;
+}
+
+#chart-line {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  transition: stroke 0.2s ease;
+}
+
+#chart-points circle {
+  r: 2.4;
+  transition: fill 0.2s ease;
+}
+
+/* mismo mecanismo de clases de estado que ya tiñe #circle y #spm-display */
+body.idle #chart-line { stroke: var(--idle); }
+body.warning #chart-line { stroke: var(--warning); }
+body.active #chart-line { stroke: var(--active); }
+body.alert #chart-line { stroke: var(--alert); }
+
+body.idle #chart-area { fill: var(--idle-soft); }
+body.warning #chart-area { fill: var(--warning-soft); }
+body.active #chart-area { fill: var(--active-soft); }
+body.alert #chart-area { fill: color-mix(in srgb, var(--alert) 35%, transparent); }
+
+body.idle #chart-points circle { fill: var(--idle); }
+body.warning #chart-points circle { fill: var(--warning); }
+body.active #chart-points circle { fill: var(--active); }
+body.alert #chart-points circle { fill: var(--alert); }
+
+/* =============================
+   DISPLAY
 ============================= */
 
 #spm-display {
-  font-size: clamp(3.5rem, 18vw, 9rem);
-  font-weight: 900;
-  letter-spacing: -0.03em;
-  position: relative;
-  z-index: 2;
+  font-family: "Oswald", sans-serif;
+  font-weight: 700;
+
+  font-size: clamp(3.8rem, 18vw, 9rem);
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+
+  opacity: 0.95;
+
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+/* state colors */
+#spm-display.idle {
+  color: var(--idle);
+}
+
+#spm-display.warning {
+  color: var(--warning);
+}
+
+#spm-display.active {
+  color: var(--active);
+}
+
+#spm-display.alert {
+  color: #ffffff;
 }
 
 /* =============================
-   TEXTO
+   TEXTOS
 ============================= */
 
 #unit {
-  margin-top: 10px;
-  font-size: clamp(0.6rem, 2.2vw, 0.8rem);
-  letter-spacing: 0.25em;
+  margin-top: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
   color: var(--muted);
 }
 
 #status {
   margin-top: 14px;
-  font-size: clamp(0.75rem, 2.8vw, 1rem);
-  letter-spacing: 0.12em;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  opacity: 0.85;
 }
 
 #help {
-  margin-top: 18px;
-  font-size: clamp(0.6rem, 2.2vw, 0.8rem);
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--muted);
-  line-height: 1.4;
+  line-height: 1.6;
   opacity: 0.6;
 }
 
-#help p {
-  margin: 3px 0;
+#help p:first-child {
+  margin-bottom: 2px;
 }
 
 /* =============================
-   BOTÓN VIBRACIÓN (FLOATING)
+   PROMO CLUB
 ============================= */
 
-#vibration-toggle {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-
-  padding: 10px 14px;
-  font-size: 0.75rem;
+#promo-banner {
+  display: inline-block;
+  margin: 0 auto;
+  padding: 6px 10px;
+  font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
-
-  background: hsl(220, 10%, 14%);
-  color: var(--text);
-
-  border: 1px solid hsl(220, 10%, 25%);
-  border-radius: 999px;
-
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-
-  z-index: 10;
-
+  letter-spacing: 0.03em;
+  color: var(--idle);
+  text-decoration: none;
   opacity: 0.9;
-  transition: all 0.2s ease;
-}
-
-#vibration-toggle:active {
-  transform: scale(0.95);
-}
-
-#vibration-toggle.off {
-  background: hsl(4, 50%, 20%);
-  border-color: hsl(4, 80%, 40%);
 }
 
 /* =============================
-   COLORES
+   VISTA DE GRABACIÓN
 ============================= */
 
-.red { color: var(--red); }
-.yellow { color: var(--yellow); }
-.green { color: var(--green); }
+#session-view {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 18px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+#session-view[hidden] {
+  display: none;
+}
+
+#session-view-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 22px 18px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 28px;
+  box-shadow: var(--card-shadow), inset 0 1px 0 var(--card-highlight);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+}
+
+#session-view-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+#session-svg {
+  width: 100%;
+  aspect-ratio: 400 / 220;
+  display: block;
+  overflow: visible;
+}
+
+#session-svg .session-line {
+  fill: none;
+  stroke: var(--idle);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+#session-svg .session-area {
+  fill: var(--idle-soft);
+  stroke: none;
+}
+
+#session-svg .session-point {
+  fill: var(--idle);
+}
+
+#session-svg .session-label {
+  fill: var(--text);
+  font-size: 11px;
+  font-family: "Oswald", sans-serif;
+  font-variant-numeric: tabular-nums;
+  text-anchor: middle;
+}
+
+#session-svg .session-axis {
+  fill: var(--muted);
+  font-size: 10px;
+  font-family: "Oswald", sans-serif;
+}
+
+#session-svg .session-gridline {
+  stroke: var(--grid-line);
+  stroke-width: 1;
+}
+
+#session-view-hint {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  opacity: 0.7;
+}
 
 /* =============================
-   GLOW
+   GLOW STATES
 ============================= */
 
-.red-glow { box-shadow: 0 0 60px hsl(4, 100%, 59%, 0.3); }
-.yellow-glow { box-shadow: 0 0 60px hsl(45, 100%, 50%, 0.3); }
-.green-glow { box-shadow: 0 0 60px hsl(142, 69%, 49%, 0.3); }
+.idle-glow {
+  box-shadow:
+    inset 0 0 40px var(--circle-inset),
+    0 0 50px var(--idle-glow);
+}
+
+.warning-glow {
+  box-shadow:
+    inset 0 0 40px var(--circle-inset),
+    0 0 50px var(--warning-glow);
+}
+
+.active-glow {
+  box-shadow:
+    inset 0 0 40px var(--circle-inset),
+    0 0 50px var(--active-glow);
+}
+
+.alert-glow {
+  box-shadow:
+    inset 0 0 40px var(--circle-inset),
+    0 0 60px rgba(255, 255, 255, 0.5);
+}
+
+/* =============================
+   IDLE PULSE SYSTEM
+============================= */
+
+#circle.idle {
+  animation: idle-pulse 3.33s infinite ease-out;
+}
+
+/* Flash del círculo */
+@keyframes idle-pulse {
+  0% {
+    box-shadow:
+      inset 0 0 40px var(--circle-inset),
+      0 0 0px var(--idle-glow);
+  }
+
+  8% {
+    box-shadow:
+      inset 0 0 40px var(--circle-inset),
+      0 0 30px var(--idle-glow);
+  }
+
+  100% {
+    box-shadow:
+      inset 0 0 40px var(--circle-inset),
+      0 0 0px var(--idle-glow);
+  }
+}
+
+/* =============================
+   IDLE RIPPLES (MULTI WAVE)
+============================= */
+
+#circle.idle .ripple {
+  opacity: 0;
+}
+
+/* Ripple principal */
+#circle.idle .ripple-1 {
+  animation: ripple-idle 3.33s infinite;
+}
+
+/* Ripple desfasado 1 */
+#circle.idle .ripple-2 {
+  animation: ripple-idle 3.33s infinite;
+  animation-delay: 1.1s;
+}
+
+/* Ripple desfasado 2 */
+#circle.idle .ripple-3 {
+  animation: ripple-idle 3.33s infinite;
+  animation-delay: 2.2s;
+}
+
+@keyframes ripple-idle {
+  0% {
+    transform: scale(1);
+    opacity: 0.25;
+  }
+
+  70% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}

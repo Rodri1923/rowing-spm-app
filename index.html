@@ -1,48 +1,115 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SPM</title>
 
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#eef2f8">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="assets/icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SPM">
 
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
 
+  <div id="splash" aria-hidden="true">
+    <div class="splash-rings">
+      <div class="splash-ripple splash-ripple-1"></div>
+      <div class="splash-ripple splash-ripple-2"></div>
+      <div class="splash-ripple splash-ripple-3"></div>
+      <img id="splash-logo" src="assets/logo-wordmark.png" alt="">
+    </div>
+    <div id="splash-club">Club Colonia Rowing</div>
+    <div id="splash-tagline">Contador de remadas</div>
+  </div>
+
+  <img id="brand-logo" src="assets/logo-wordmark.png" alt="Logo del club">
+
+  <button id="theme-toggle" aria-label="Cambiar tema">
+    <svg id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden>
+      <circle cx="12" cy="12" r="4"></circle>
+      <line x1="12" y1="2" x2="12" y2="4.5"></line>
+      <line x1="12" y1="19.5" x2="12" y2="22"></line>
+      <line x1="4.22" y1="4.22" x2="5.95" y2="5.95"></line>
+      <line x1="18.05" y1="18.05" x2="19.78" y2="19.78"></line>
+      <line x1="2" y1="12" x2="4.5" y2="12"></line>
+      <line x1="19.5" y1="12" x2="22" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.95" y2="18.05"></line>
+      <line x1="18.05" y1="5.95" x2="19.78" y2="4.22"></line>
+    </svg>
+    <svg id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path>
+    </svg>
+  </button>
+
   <main id="app">
-    
-    <!-- CÍRCULO PRINCIPAL -->
-    <div id="circle">
-      
-      <!-- ONDA EXPANSIVA -->
-      <div class="ripple"></div>
 
-      <!-- DISPLAY SPM -->
-      <div id="spm-display" class="red">--</div>
+    <h1 id="page-title">Contador de remadas</h1>
 
+    <div class="glass-card hero-card">
+      <span id="rec-indicator" hidden>● REC</span>
+
+      <div id="circle">
+        <div class="ripple ripple-1"></div>
+        <div class="ripple ripple-2"></div>
+        <div class="ripple ripple-3"></div>
+        <div id="spm-display" class="idle">CCR</div>
+      </div>
+
+      <div id="unit">REMADAS/MIN</div>
+
+      <div id="status">Esperando medida</div>
     </div>
 
-    <!-- UNIDAD -->
-    <div id="unit">REMADAS/MIN</div>
+    <div class="glass-card chart-card" id="chart-card">
+      <div id="chart">
+        <div class="chart-plot">
+          <div class="chart-y-axis">
+            <span id="chart-y-max"></span>
+            <span id="chart-y-min"></span>
+          </div>
+          <svg id="chart-svg" viewBox="0 0 300 100" preserveAspectRatio="none">
+            <line class="chart-gridline" x1="0" y1="50" x2="300" y2="50"></line>
+            <polygon id="chart-area"></polygon>
+            <polyline id="chart-line" points=""></polyline>
+            <g id="chart-points"></g>
+          </svg>
+        </div>
+        <div class="chart-x-axis">
+          <span>-60s</span>
+          <span>ahora</span>
+        </div>
+      </div>
+    </div>
 
-    <!-- ESTADO -->
-    <div id="status">Esperando medida</div>
-
-    <!-- INSTRUCCIONES -->
     <div id="help">
-      <p><strong>Cómo usar:</strong></p>
-      <p>• Tocá la pantalla cada remada</p>
-      <p>• Ritmo constante = mejor precisión</p>
-      <p>• Doble tap para reiniciar</p>
-      <p>• Aguante el CCR</p>
+      <p><strong>Cómo usar</strong></p>
+      <p>Tocá cada remada · Doble tap reinicia</p>
+      <p>Mantené presionado para grabar · Tocá el gráfico para mostrarlo</p>
     </div>
+
+    <a id="promo-banner" href="https://www.instagram.com/clubcoloniarowing/?hl=es" target="_blank" rel="noopener noreferrer">
+      Conocé el mejor club de remo del mundo →
+    </a>
 
   </main>
 
-  <!-- 🔥 BOTÓN FUERA DEL MAIN (correcto para fixed) -->
-  <button id="vibration-toggle"></button>
+  <div id="session-view" hidden>
+    <div id="session-view-card">
+      <div id="session-view-title"></div>
+      <div class="chart-plot">
+        <svg id="session-svg" viewBox="0 0 400 220"></svg>
+      </div>
+      <div id="session-view-hint">Tocá para cerrar</div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 
