@@ -115,6 +115,21 @@ document.addEventListener("visibilitychange", () => {
 
 
 // =============================
+// SPLASH DE BIENVENIDA
+// =============================
+// Se saca del todo del DOM cuando termina de desvanecerse, para no dejar
+// una capa fixed invisible dando vueltas.
+
+const splash = document.getElementById("splash");
+
+if (splash) {
+  splash.addEventListener("animationend", (e) => {
+    if (e.target === splash) splash.remove();
+  });
+}
+
+
+// =============================
 // EVENTO PRINCIPAL (tap normal vs. mantener presionado)
 // =============================
 // Un tap corto cuenta una remada. Mantener presionado (en cualquier lugar)
