@@ -54,8 +54,6 @@
     <h1 id="page-title">Contador de remadas</h1>
 
     <div class="glass-card hero-card">
-      <span id="rec-indicator" hidden>● REC</span>
-
       <div id="circle">
         <div class="ripple ripple-1"></div>
         <div class="ripple ripple-2"></div>
@@ -69,6 +67,14 @@
     </div>
 
     <div class="glass-card chart-card" id="chart-card">
+      <div class="chart-header">
+        <button id="record-btn" aria-label="Grabar una serie">
+          <span id="record-dot"></span>
+          REC
+        </button>
+        <span class="chart-header-caption">Grabá una serie para mostrarle al equipo</span>
+      </div>
+
       <div id="chart">
         <div class="chart-plot">
           <div class="chart-y-axis">
@@ -92,7 +98,7 @@
     <div id="help">
       <p><strong>Cómo usar</strong></p>
       <p>Tocá cada remada · Doble tap reinicia</p>
-      <p>Mantené presionado para grabar · Tocá el gráfico para mostrarlo</p>
+      <p>Botón REC (o mantené presionado) graba · Tocá el gráfico para verla</p>
     </div>
 
     <a id="promo-banner" href="https://www.instagram.com/clubcoloniarowing/?hl=es" target="_blank" rel="noopener noreferrer">

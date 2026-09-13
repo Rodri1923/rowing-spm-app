@@ -14,7 +14,7 @@ const chartYMin = document.getElementById("chart-y-min");
 const themeToggleBtn = document.getElementById("theme-toggle");
 const iconSun = document.getElementById("icon-sun");
 const iconMoon = document.getElementById("icon-moon");
-const recIndicator = document.getElementById("rec-indicator");
+const recordBtn = document.getElementById("record-btn");
 const chartCard = document.getElementById("chart-card");
 const sessionView = document.getElementById("session-view");
 const sessionViewTitle = document.getElementById("session-view-title");
@@ -507,11 +507,11 @@ function toggleRecording() {
     isRecording = true;
     recordingSeries = [];
     recordingStartTs = Date.now();
-    recIndicator.hidden = false;
+    recordBtn.classList.add("recording");
     vibrate(VIBRATE_RECORD_START);
   } else {
     isRecording = false;
-    recIndicator.hidden = true;
+    recordBtn.classList.remove("recording");
     vibrate(VIBRATE_RECORD_STOP);
     saveRecording();
   }
@@ -620,6 +620,11 @@ function openSessionView() {
   renderSessionView(data);
   sessionView.hidden = false;
 }
+
+recordBtn.addEventListener("click", (e) => {
+  e.stopPropagation(); // no debe contar como tap ni abrir la vista de sesión
+  toggleRecording();
+});
 
 chartCard.addEventListener("click", (e) => {
   e.stopPropagation(); // no debe contar como tap de remada
