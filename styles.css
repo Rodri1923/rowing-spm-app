@@ -6,26 +6,91 @@
 }
 
 :root {
-  --bg: hsl(0, 0%, 4%);
   --text: rgba(255, 255, 255, 0.92);
   --muted: rgba(255, 255, 255, 0.45);
 
   /* =========================
      STATE COLORS (CORE)
   ========================= */
-  --idle: hsl(220, 80%, 20%);
+  --idle: hsl(222, 60%, 38%); /* azul de marca del logo del club (#274A9C) */
   --warning: hsl(42, 100%, 62%);
   --active: hsl(142, 60%, 55%);
+  --alert: hsl(0, 85%, 55%); /* lectura fuera de rango humano (>65 SPM) */
 
   /* derived soft variants */
   --idle-soft: color-mix(in srgb, var(--idle) 35%, transparent);
   --warning-soft: color-mix(in srgb, var(--warning) 35%, transparent);
   --active-soft: color-mix(in srgb, var(--active) 35%, transparent);
 
-  /* glow variants */
-  --idle-glow: color-mix(in srgb, var(--idle) 35%, white);
-  --warning-glow: color-mix(in srgb, var(--warning) 10%, transparent);
-  --active-glow: color-mix(in srgb, var(--active) 10%, transparent);
+  /* glow variants — mezclados hacia transparente (no hacia blanco) para que
+     el halo se vea bien tanto en tema oscuro como en tema claro */
+  --idle-glow: color-mix(in srgb, var(--idle) 45%, transparent);
+  --warning-glow: color-mix(in srgb, var(--warning) 35%, transparent);
+  --active-glow: color-mix(in srgb, var(--active) 35%, transparent);
+
+  /* =========================
+     TOKENS DE TEMA (oscuro = default)
+  ========================= */
+  --bg-base-1: hsl(220, 35%, 4%);
+  --bg-base-2: hsl(220, 45%, 2%);
+
+  --circle-inset: rgba(0, 0, 0, 0.85);
+  --circle-sheen-1: rgba(255, 255, 255, 0.03);
+  --circle-sheen-2: rgba(255, 255, 255, 0.01);
+
+  --grid-line: rgba(255, 255, 255, 0.08);
+
+  /* halos ambientales de fondo (look "vidrio esmerilado") */
+  --blob-1: rgba(39, 74, 156, 0.40);
+  --blob-2: rgba(39, 74, 156, 0.22);
+  --blob-3: rgba(60, 190, 140, 0.10);
+
+  /* tarjetas de vidrio — poco transparentes a propósito: el glassmorphism
+     clásico se lava con sol directo, así que la base es un navy sólido-ish
+     y el blur solo suma profundidad, no reemplaza el contraste */
+  --card-bg: rgba(14, 22, 42, 0.62);
+  --card-border: rgba(255, 255, 255, 0.14);
+  --card-highlight: rgba(255, 255, 255, 0.07);
+  --card-shadow: 0 10px 34px rgba(0, 0, 0, 0.4);
+}
+
+/* Tema claro — se activa con html[data-theme="light"] */
+html[data-theme="light"] {
+  --warning: hsl(36, 90%, 40%); /* ámbar oscuro: el amarillo original es ilegible sobre blanco */
+  --active: hsl(142, 65%, 30%); /* verde bosque: el verde original pierde contraste sobre blanco */
+
+  --text: hsl(220, 25%, 14%);
+  --muted: hsl(220, 12%, 40%);
+
+  --bg-base-1: hsl(210, 45%, 97%);
+  --bg-base-2: hsl(210, 30%, 99%);
+
+  --circle-inset: rgba(30, 40, 60, 0.10);
+  --circle-sheen-1: rgba(0, 0, 0, 0.035);
+  --circle-sheen-2: rgba(0, 0, 0, 0.012);
+
+  --grid-line: rgba(20, 30, 50, 0.10);
+
+  --blob-1: rgba(39, 74, 156, 0.16);
+  --blob-2: rgba(39, 74, 156, 0.09);
+  --blob-3: rgba(30, 160, 120, 0.07);
+
+  --card-bg: rgba(255, 255, 255, 0.58);
+  --card-border: rgba(255, 255, 255, 0.75);
+  --card-highlight: rgba(255, 255, 255, 0.9);
+  --card-shadow: 0 10px 28px rgba(20, 30, 55, 0.12);
+}
+
+/* =============================
+   FUENTE (autohospedada, sin depender de red)
+============================= */
+
+@font-face {
+  font-family: "Oswald";
+  src: url("./assets/fonts/oswald-latin-variable.woff2") format("woff2");
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
 }
 
 /* =============================
@@ -34,22 +99,20 @@
 
 body {
   background:
+    radial-gradient(circle at 12% 10%, var(--blob-1), transparent 45%),
+    radial-gradient(circle at 88% 20%, var(--blob-2), transparent 50%),
+    radial-gradient(circle at 50% 100%, var(--blob-3), transparent 60%),
     linear-gradient(
       180deg,
-      rgba(10, 40, 90, 0.55) 0%,
-      rgba(10, 40, 90, 0.12) 7%,
-      rgba(0, 0, 0, 0) 45%
-    ),
-    linear-gradient(
-      180deg,
-      hsl(220, 35%, 4%),
-      hsl(220, 45%, 2%)
+      var(--bg-base-1),
+      var(--bg-base-2)
     );
 
   color: var(--text);
 
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+  font-family: "Oswald", -apple-system, BlinkMacSystemFont, "SF Pro Display",
     "SF Pro Text", sans-serif;
+  font-weight: 500;
 
   height: 100vh;
   display: flex;
@@ -61,12 +124,137 @@ body {
      y el delay sintético de click en navegadores móviles */
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+body.alert {
+  background: linear-gradient(180deg, hsl(0, 80%, 40%), hsl(0, 85%, 25%));
+}
+
+body.alert #unit,
+body.alert #status,
+body.alert #help {
+  color: rgba(255, 255, 255, 0.92);
 }
 
 #app {
   text-align: center;
   width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
   padding: 0 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+#page-title {
+  font-family: "Oswald", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* =============================
+   TARJETAS DE VIDRIO
+============================= */
+
+.glass-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 32px;
+  box-shadow: var(--card-shadow), inset 0 1px 0 var(--card-highlight);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.hero-card {
+  position: relative;
+  padding: 22px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chart-card {
+  padding: 18px 16px 14px;
+}
+
+/* el gráfico se puede tocar para ver la última grabación guardada */
+#chart-card {
+  cursor: pointer;
+}
+
+/* =============================
+   LOGO DE MARCA
+============================= */
+
+#brand-logo {
+  position: fixed;
+  top: 12px;
+  left: 14px;
+  width: clamp(76px, 21vw, 108px);
+  height: auto;
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--idle) 55%, transparent));
+  z-index: 10;
+}
+
+/* =============================
+   INDICADOR DE GRABACIÓN
+============================= */
+
+#rec-indicator {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--alert);
+  animation: rec-blink 1.2s infinite;
+}
+
+@keyframes rec-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* =============================
+   BOTÓN DE TEMA
+============================= */
+
+#theme-toggle {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+#theme-toggle svg {
+  width: 19px;
+  height: 19px;
+}
+
+#theme-toggle svg[hidden] {
+  display: none;
 }
 
 /* =============================
@@ -93,15 +281,19 @@ body {
 
   background: radial-gradient(
     circle at 30% 30%,
-    rgba(255, 255, 255, 0.03),
-    rgba(255, 255, 255, 0.01) 60%,
+    var(--circle-sheen-1),
+    var(--circle-sheen-2) 60%,
     transparent 100%
   );
 
   box-shadow:
-    inset 0 0 40px rgba(0, 0, 0, 0.85);
+    inset 0 0 40px var(--circle-inset);
 
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#circle.alert {
+  border-color: #ffffff;
 }
 
 /* =============================
@@ -138,29 +330,106 @@ body {
   border: 2px solid var(--active-soft);
 }
 
+#circle.alert .ripple {
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
 /* =============================
-   FUENTE (autohospedada, sin depender de red)
+   GRÁFICO SPM / TIEMPO
 ============================= */
 
-@font-face {
-  font-family: "Anton";
-  src: url("./assets/fonts/anton-latin-400.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+#chart {
+  width: 100%;
 }
+
+.chart-plot {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.chart-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 26px;
+  flex-shrink: 0;
+  padding: 2px 0;
+  font-size: 0.65rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  text-align: right;
+}
+
+#chart-svg {
+  flex: 1;
+  min-width: 0;
+  height: 130px;
+  display: block;
+  overflow: visible;
+}
+
+.chart-x-axis {
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 0 0 34px;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.chart-gridline {
+  stroke: var(--grid-line);
+  stroke-width: 1;
+}
+
+#chart-area {
+  stroke: none;
+  transition: fill 0.2s ease;
+}
+
+#chart-line {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  transition: stroke 0.2s ease;
+}
+
+#chart-points circle {
+  r: 2.4;
+  transition: fill 0.2s ease;
+}
+
+/* mismo mecanismo de clases de estado que ya tiñe #circle y #spm-display */
+body.idle #chart-line { stroke: var(--idle); }
+body.warning #chart-line { stroke: var(--warning); }
+body.active #chart-line { stroke: var(--active); }
+body.alert #chart-line { stroke: var(--alert); }
+
+body.idle #chart-area { fill: var(--idle-soft); }
+body.warning #chart-area { fill: var(--warning-soft); }
+body.active #chart-area { fill: var(--active-soft); }
+body.alert #chart-area { fill: color-mix(in srgb, var(--alert) 35%, transparent); }
+
+body.idle #chart-points circle { fill: var(--idle); }
+body.warning #chart-points circle { fill: var(--warning); }
+body.active #chart-points circle { fill: var(--active); }
+body.alert #chart-points circle { fill: var(--alert); }
 
 /* =============================
    DISPLAY
 ============================= */
 
 #spm-display {
-  font-family: "Anton", sans-serif;
+  font-family: "Oswald", sans-serif;
+  font-weight: 700;
 
   font-size: clamp(3.8rem, 18vw, 9rem);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
 
-  opacity: 0.9;
+  opacity: 0.95;
 
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
@@ -179,6 +448,10 @@ body {
   color: var(--active);
 }
 
+#spm-display.alert {
+  color: #ffffff;
+}
+
 /* =============================
    TEXTOS
 ============================= */
@@ -186,6 +459,7 @@ body {
 #unit {
   margin-top: 12px;
   font-size: 0.75rem;
+  font-weight: 600;
   letter-spacing: 0.22em;
   color: var(--muted);
 }
@@ -193,16 +467,132 @@ body {
 #status {
   margin-top: 14px;
   font-size: 0.95rem;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.75);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  opacity: 0.85;
 }
 
 #help {
-  margin-top: 22px;
   font-size: 0.75rem;
+  font-weight: 500;
   color: var(--muted);
-  line-height: 1.5;
-  opacity: 0.55;
+  line-height: 1.6;
+  opacity: 0.6;
+}
+
+#help p:first-child {
+  margin-bottom: 2px;
+}
+
+/* =============================
+   PROMO CLUB
+============================= */
+
+#promo-banner {
+  display: inline-block;
+  margin: 0 auto;
+  padding: 6px 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--idle);
+  text-decoration: none;
+  opacity: 0.9;
+}
+
+/* =============================
+   VISTA DE GRABACIÓN
+============================= */
+
+#session-view {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 18px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+#session-view[hidden] {
+  display: none;
+}
+
+#session-view-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 22px 18px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 28px;
+  box-shadow: var(--card-shadow), inset 0 1px 0 var(--card-highlight);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+}
+
+#session-view-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+#session-svg {
+  width: 100%;
+  aspect-ratio: 400 / 220;
+  display: block;
+  overflow: visible;
+}
+
+#session-svg .session-line {
+  fill: none;
+  stroke: var(--idle);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+#session-svg .session-area {
+  fill: var(--idle-soft);
+  stroke: none;
+}
+
+#session-svg .session-point {
+  fill: var(--idle);
+}
+
+#session-svg .session-label {
+  fill: var(--text);
+  font-size: 11px;
+  font-family: "Oswald", sans-serif;
+  font-variant-numeric: tabular-nums;
+  text-anchor: middle;
+}
+
+#session-svg .session-axis {
+  fill: var(--muted);
+  font-size: 10px;
+  font-family: "Oswald", sans-serif;
+}
+
+#session-svg .session-gridline {
+  stroke: var(--grid-line);
+  stroke-width: 1;
+}
+
+#session-view-hint {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  opacity: 0.7;
 }
 
 /* =============================
@@ -211,20 +601,26 @@ body {
 
 .idle-glow {
   box-shadow:
-    inset 0 0 40px rgba(0, 0, 0, 0.85),
+    inset 0 0 40px var(--circle-inset),
     0 0 50px var(--idle-glow);
 }
 
 .warning-glow {
   box-shadow:
-    inset 0 0 40px rgba(0, 0, 0, 0.85),
+    inset 0 0 40px var(--circle-inset),
     0 0 50px var(--warning-glow);
 }
 
 .active-glow {
   box-shadow:
-    inset 0 0 40px rgba(0, 0, 0, 0.85),
+    inset 0 0 40px var(--circle-inset),
     0 0 50px var(--active-glow);
+}
+
+.alert-glow {
+  box-shadow:
+    inset 0 0 40px var(--circle-inset),
+    0 0 60px rgba(255, 255, 255, 0.5);
 }
 
 /* =============================
@@ -239,19 +635,19 @@ body {
 @keyframes idle-pulse {
   0% {
     box-shadow:
-      inset 0 0 40px rgba(0, 0, 0, 0.85),
+      inset 0 0 40px var(--circle-inset),
       0 0 0px var(--idle-glow);
   }
 
   8% {
     box-shadow:
-      inset 0 0 40px rgba(0, 0, 0, 0.85),
+      inset 0 0 40px var(--circle-inset),
       0 0 30px var(--idle-glow);
   }
 
   100% {
     box-shadow:
-      inset 0 0 40px rgba(0, 0, 0, 0.85),
+      inset 0 0 40px var(--circle-inset),
       0 0 0px var(--idle-glow);
   }
 }
@@ -296,4 +692,3 @@ body {
     opacity: 0;
   }
 }
-

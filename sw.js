@@ -2,7 +2,7 @@
 // CONFIG
 // =============================
 
-const CACHE_NAME = "spm-app-v2";
+const CACHE_NAME = "spm-app-v6";
 
 const ASSETS = [
   "./",
@@ -10,11 +10,12 @@ const ASSETS = [
   "./styles.css",
   "./app.js",
   "./manifest.json",
-  "./assets/fonts/anton-latin-400.woff2",
+  "./assets/fonts/oswald-latin-variable.woff2",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
   "./assets/icons/icon-512-maskable.png",
-  "./assets/icons/apple-touch-icon.png"
+  "./assets/icons/apple-touch-icon.png",
+  "./assets/logo-wordmark.png"
 ];
 
 
