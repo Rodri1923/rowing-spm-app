@@ -16,7 +16,7 @@ const themeToggleBtn = document.getElementById("theme-toggle");
 const iconSun = document.getElementById("icon-sun");
 const iconMoon = document.getElementById("icon-moon");
 const recordBtn = document.getElementById("record-btn");
-const chartCard = document.getElementById("chart-card");
+const viewSessionBtn = document.getElementById("view-session-btn");
 const sessionView = document.getElementById("session-view");
 const sessionViewTitle = document.getElementById("session-view-title");
 const sessionSvg = document.getElementById("session-svg");
@@ -150,13 +150,19 @@ function handleTap() {
   // Por si el wake lock se liberó (ej. app en background), reintentar
   requestWakeLock();
 
-  // Ripple — una sola onda por tap (las otras dos son solo para el pulso
-  // ambiental en idle); si se dispararan las 3 juntas en cada tap rápido
-  // se amontonan ondas superpuestas dentro de la tarjeta.
-  const tapRipple = ripples[0];
-  tapRipple.classList.remove("active");
-  void tapRipple.offsetWidth;
-  tapRipple.classList.add("active");
+  // Ripple "líquido": la onda principal + una gotita de impacto chica y
+  // rápida, como el toque del dedo en el agua antes de que se abra la
+  // onda. Se usan solo 2 de las 3 ripples (la tercera queda libre para el
+  // pulso ambiental en idle) para no amontonar ondas si se tapea rápido.
+  const waveRipple = ripples[0];
+  waveRipple.classList.remove("active");
+  void waveRipple.offsetWidth;
+  waveRipple.classList.add("active");
+
+  const impactRipple = ripples[1];
+  impactRipple.classList.remove("active-impact");
+  void impactRipple.offsetWidth;
+  impactRipple.classList.add("active-impact");
 
   // Double tap → reset
   if (now - lastTapTimestamp < DOUBLE_TAP_THRESHOLD) {
@@ -302,7 +308,7 @@ function buildChartMarkup(coords, states, baselineY) {
   for (let i = 1; i < coords.length; i++) {
     const a = coords[i - 1];
     const b = coords[i];
-    const segClass = `seg-${states[i]}`; // color del tramo = estado del tap más nuevo del tramo
+    const segClass = `seg-${states[i - 1]}`; // color del tramo = estado del punto a su izquierda
 
     lineMarkup += `<line class="chart-seg-line ${segClass}" x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}"></line>`;
     areaMarkup += `<polygon class="chart-seg-area ${segClass}" points="${a.x.toFixed(1)},${baselineY} ${a.x.toFixed(1)},${a.y.toFixed(1)} ${b.x.toFixed(1)},${b.y.toFixed(1)} ${b.x.toFixed(1)},${baselineY}"></polygon>`;
@@ -623,7 +629,10 @@ recordBtn.addEventListener("click", (e) => {
   toggleRecording();
 });
 
-chartCard.addEventListener("click", (e) => {
+// El resto de la tarjeta del gráfico (fuera de estos dos botones) cuenta
+// como tap normal, igual que cualquier otro lugar de la pantalla — ver
+// la grabación guardada es solo a través del botón "Ver".
+viewSessionBtn.addEventListener("click", (e) => {
   e.stopPropagation(); // no debe contar como tap de remada
   if (!isRecording) openSessionView();
 });

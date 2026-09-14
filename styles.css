@@ -193,11 +193,6 @@ body.alert #help {
   padding: 18px 16px 14px;
 }
 
-/* el gráfico se puede tocar para ver la última grabación guardada */
-#chart-card {
-  cursor: pointer;
-}
-
 /* =============================
    SPLASH DE BIENVENIDA
 ============================= */
@@ -370,10 +365,25 @@ body.alert #help {
 }
 
 .chart-header-caption {
+  flex: 1;
+  min-width: 0;
   font-size: 0.68rem;
   color: var(--muted);
   line-height: 1.3;
   text-align: left;
+}
+
+#view-session-btn {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text);
+  font-family: "Oswald", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
 }
 
 @keyframes rec-blink {
@@ -459,35 +469,60 @@ body.alert #help {
   border-radius: 50%;
   pointer-events: none;
   opacity: 0;
+  filter: blur(1.5px); /* borde difuso en vez de línea dura — se siente más agua que goma */
 }
 
+/* onda principal: como si tocaras suave el agua — se expande y se
+   desvanece con una desaceleración pareja, sin rebote elástico, y con un
+   leve tambaleo de forma (no queda perfectamente circular) para que no
+   se sienta geométrica/rígida */
 .ripple.active {
-  /* curva con un poco de rebote ("overshoot") en vez de un ease-out plano,
-     y más corta + más chica que antes para que quepa dentro de la tarjeta
-     y no se acumulen ondas si se tapea rápido */
-  animation: ripple-out 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: ripple-out 0.75s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes ripple-out {
-  0% { transform: scale(1); opacity: 0.4; }
-  100% { transform: scale(1.55); opacity: 0; }
+  0% {
+    transform: scale(0.85);
+    opacity: 0.45;
+    border-radius: 50%;
+  }
+  55% {
+    border-radius: 47% 53% 52% 48% / 51% 47% 53% 49%;
+  }
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+    border-radius: 50%;
+  }
 }
 
-/* ripple states */
+/* gotita de impacto: chica y rápida, junto con la onda principal, como el
+   golpe inicial del dedo contra el agua antes de que se abra la onda */
+.ripple.active-impact {
+  animation: ripple-impact 0.32s ease-out;
+}
+
+@keyframes ripple-impact {
+  0% { transform: scale(0.6); opacity: 0.55; }
+  100% { transform: scale(1.05); opacity: 0; }
+}
+
+/* ripple states — gradiente radial en vez de borde sólido: da un anillo
+   suave que se apaga hacia los bordes, como luz reflejándose en agua */
 #circle.idle .ripple {
-  border: 2px solid var(--idle-soft);
+  background: radial-gradient(circle, transparent 55%, var(--idle-soft) 61%, transparent 70%);
 }
 
 #circle.warning .ripple {
-  border: 2px solid var(--warning-soft);
+  background: radial-gradient(circle, transparent 55%, var(--warning-soft) 61%, transparent 70%);
 }
 
 #circle.active .ripple {
-  border: 2px solid var(--active-soft);
+  background: radial-gradient(circle, transparent 55%, var(--active-soft) 61%, transparent 70%);
 }
 
 #circle.alert .ripple {
-  border: 2px solid rgba(255, 255, 255, 0.5);
+  background: radial-gradient(circle, transparent 55%, rgba(255, 255, 255, 0.5) 61%, transparent 70%);
 }
 
 /* =============================
