@@ -10,6 +10,7 @@ const chartLine = document.getElementById("chart-line");
 const chartArea = document.getElementById("chart-area");
 const chartPoints = document.getElementById("chart-points");
 const chartYMax = document.getElementById("chart-y-max");
+const chartYMid = document.getElementById("chart-y-mid");
 const chartYMin = document.getElementById("chart-y-min");
 const themeToggleBtn = document.getElementById("theme-toggle");
 const iconSun = document.getElementById("icon-sun");
@@ -149,12 +150,13 @@ function handleTap() {
   // Por si el wake lock se liberó (ej. app en background), reintentar
   requestWakeLock();
 
-  // Ripple
-  ripples.forEach(ripple => {
-    ripple.classList.remove("active");
-    void ripple.offsetWidth;
-    ripple.classList.add("active");
-  });
+  // Ripple — una sola onda por tap (las otras dos son solo para el pulso
+  // ambiental en idle); si se dispararan las 3 juntas en cada tap rápido
+  // se amontonan ondas superpuestas dentro de la tarjeta.
+  const tapRipple = ripples[0];
+  tapRipple.classList.remove("active");
+  void tapRipple.offsetWidth;
+  tapRipple.classList.add("active");
 
   // Double tap → reset
   if (now - lastTapTimestamp < DOUBLE_TAP_THRESHOLD) {
@@ -210,14 +212,25 @@ function handleTap() {
     spmHistory.shift();
   }
 
-  spmSeries.push({ ts: now, spm: roundedSpm });
+  // Se calcula el estado de ESTE tap antes de guardarlo, para que el punto
+  // en el gráfico quede pintado con el color que tenía en ese momento (no
+  // con el estado actual — así si después se pone inestable, no repinta
+  // retroactivamente los taps que sí venían estables).
+  const stability = computeStability();
+
+  spmSeries.push({ ts: now, spm: roundedSpm, state: stability.state });
   renderChart();
 
   if (isRecording) {
-    recordingSeries.push({ t: (now - recordingStartTs) / 1000, spm: roundedSpm });
+    recordingSeries.push({
+      t: (now - recordingStartTs) / 1000,
+      spm: roundedSpm,
+      state: stability.state,
+    });
   }
 
-  updateState();
+  status.textContent = stability.text;
+  setState(stability.state);
 }
 
 
@@ -225,26 +238,20 @@ function handleTap() {
 // ESTABILIDAD
 // =============================
 
-function updateState() {
+function computeStability() {
   if (spmHistory.length < 2) {
-    status.textContent = "Midiendo...";
-    setState("warning");
-    return;
+    return { state: "warning", text: "Midiendo..." };
   }
 
   const last = spmHistory[spmHistory.length - 1];
   const prev = spmHistory[spmHistory.length - 2];
 
   if (Math.abs(last - prev) > BREAK_THRESHOLD) {
-    status.textContent = "Inestable";
-    setState("warning");
-    return;
+    return { state: "warning", text: "Inestable" };
   }
 
   if (spmHistory.length < STABILITY_SAMPLES) {
-    status.textContent = "Ajustando...";
-    setState("warning");
-    return;
+    return { state: "warning", text: "Ajustando..." };
   }
 
   const avgSpm =
@@ -258,13 +265,9 @@ function updateState() {
 
   const isStable = withinTolerance && range <= RANGE_THRESHOLD;
 
-  if (isStable) {
-    status.textContent = "Estable";
-    setState("active");
-  } else {
-    status.textContent = "Inestable";
-    setState("warning");
-  }
+  return isStable
+    ? { state: "active", text: "Estable" }
+    : { state: "warning", text: "Inestable" };
 }
 
 
@@ -288,6 +291,30 @@ function computeScale(values) {
   return { min, max };
 }
 
+// Arma segmentos de línea + área coloreados según el estado que tenía CADA
+// tap en el momento en que se registró (no el estado actual global) — así
+// un tramo estable queda verde y solo los taps inestables quedan en
+// amarillo, aunque el ritmo se haya "puesto amarillo" después.
+function buildChartMarkup(coords, states, baselineY) {
+  let lineMarkup = "";
+  let areaMarkup = "";
+
+  for (let i = 1; i < coords.length; i++) {
+    const a = coords[i - 1];
+    const b = coords[i];
+    const segClass = `seg-${states[i]}`; // color del tramo = estado del tap más nuevo del tramo
+
+    lineMarkup += `<line class="chart-seg-line ${segClass}" x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}"></line>`;
+    areaMarkup += `<polygon class="chart-seg-area ${segClass}" points="${a.x.toFixed(1)},${baselineY} ${a.x.toFixed(1)},${a.y.toFixed(1)} ${b.x.toFixed(1)},${b.y.toFixed(1)} ${b.x.toFixed(1)},${baselineY}"></polygon>`;
+  }
+
+  const pointsMarkup = coords
+    .map((c, i) => `<circle class="chart-pt seg-${states[i]}" cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="2.4"></circle>`)
+    .join("");
+
+  return { lineMarkup, areaMarkup, pointsMarkup };
+}
+
 function renderChart() {
   const now = Date.now();
 
@@ -295,36 +322,30 @@ function renderChart() {
   spmSeries = spmSeries.filter((p) => now - p.ts <= CHART_WINDOW_MS);
 
   if (spmSeries.length < 2) {
-    chartLine.setAttribute("points", "");
-    chartArea.setAttribute("points", "");
+    chartLine.innerHTML = "";
+    chartArea.innerHTML = "";
     chartPoints.innerHTML = "";
     chartYMax.textContent = "";
+    chartYMid.textContent = "";
     chartYMin.textContent = "";
     return;
   }
 
   const { min, max } = computeScale(spmSeries.map((p) => p.spm));
 
-  const coords = spmSeries.map((p) => {
-    const x = 300 - ((now - p.ts) / CHART_WINDOW_MS) * 300;
-    const y = 100 - ((p.spm - min) / (max - min)) * 100;
-    return { x, y };
-  });
+  const coords = spmSeries.map((p) => ({
+    x: 300 - ((now - p.ts) / CHART_WINDOW_MS) * 300,
+    y: 100 - ((p.spm - min) / (max - min)) * 100,
+  }));
+  const states = spmSeries.map((p) => p.state || "active");
 
-  const linePoints = coords
-    .map((c) => `${c.x.toFixed(1)},${c.y.toFixed(1)}`)
-    .join(" ");
-  chartLine.setAttribute("points", linePoints);
-
-  const firstX = coords[0].x.toFixed(1);
-  const lastX = coords[coords.length - 1].x.toFixed(1);
-  chartArea.setAttribute("points", `${firstX},100 ${linePoints} ${lastX},100`);
-
-  chartPoints.innerHTML = coords
-    .map((c) => `<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="2.4"></circle>`)
-    .join("");
+  const { lineMarkup, areaMarkup, pointsMarkup } = buildChartMarkup(coords, states, 100);
+  chartLine.innerHTML = lineMarkup;
+  chartArea.innerHTML = areaMarkup;
+  chartPoints.innerHTML = pointsMarkup;
 
   chartYMax.textContent = Math.round(max);
+  chartYMid.textContent = Math.round((max + min) / 2);
   chartYMin.textContent = Math.round(min);
 }
 
@@ -541,15 +562,13 @@ function renderSessionView(data) {
     y: padTop + (1 - (p.spm - min) / (max - min)) * plotH,
     spm: p.spm,
   }));
+  // Grabaciones guardadas antes de este cambio no tienen "state" por punto
+  const states = data.points.map((p) => p.state || "active");
 
-  const linePoints = coords.map((c) => `${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(" ");
-  const areaPoints =
-    `${coords[0].x.toFixed(1)},${padTop + plotH} ` +
-    linePoints +
-    ` ${coords[coords.length - 1].x.toFixed(1)},${padTop + plotH}`;
+  const { lineMarkup, areaMarkup } = buildChartMarkup(coords, states, padTop + plotH, "session-seg");
 
   const pointsMarkup = coords
-    .map((c) => `<circle class="session-point" cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="2.6"></circle>`)
+    .map((c, i) => `<circle class="session-point seg-${states[i]}" cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="2.6"></circle>`)
     .join("");
 
   // Números chiquitos en el gráfico: con sesiones largas no entran todos
@@ -570,8 +589,8 @@ function renderSessionView(data) {
     <text class="session-axis" x="${padLeft - 6}" y="${padTop + plotH}" text-anchor="end">${Math.round(min)}</text>
     <text class="session-axis" x="${padLeft}" y="${height - 8}" text-anchor="start">0:00</text>
     <text class="session-axis" x="${width - padRight}" y="${height - 8}" text-anchor="end">${formatDuration(duration)}</text>
-    <polygon class="session-area" points="${areaPoints}"></polygon>
-    <polyline class="session-line" points="${linePoints}"></polyline>
+    ${areaMarkup}
+    ${lineMarkup}
     ${pointsMarkup}
     ${labelsMarkup}
   `;

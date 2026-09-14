@@ -30,26 +30,28 @@
     <div id="splash-tagline">Contador de remadas</div>
   </div>
 
-  <img id="brand-logo" src="assets/logo-wordmark.png" alt="Logo del club">
-
-  <button id="theme-toggle" type="button" aria-label="Cambiar tema">
-    <svg id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden>
-      <circle cx="12" cy="12" r="4"></circle>
-      <line x1="12" y1="2" x2="12" y2="4.5"></line>
-      <line x1="12" y1="19.5" x2="12" y2="22"></line>
-      <line x1="4.22" y1="4.22" x2="5.95" y2="5.95"></line>
-      <line x1="18.05" y1="18.05" x2="19.78" y2="19.78"></line>
-      <line x1="2" y1="12" x2="4.5" y2="12"></line>
-      <line x1="19.5" y1="12" x2="22" y2="12"></line>
-      <line x1="4.22" y1="19.78" x2="5.95" y2="18.05"></line>
-      <line x1="18.05" y1="5.95" x2="19.78" y2="4.22"></line>
-    </svg>
-    <svg id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path>
-    </svg>
-  </button>
-
   <main id="app">
+
+    <div id="top-bar">
+      <img id="brand-logo" src="assets/logo-wordmark.png" alt="Logo del club">
+
+      <button id="theme-toggle" type="button" aria-label="Cambiar tema">
+        <svg id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden>
+          <circle cx="12" cy="12" r="4"></circle>
+          <line x1="12" y1="2" x2="12" y2="4.5"></line>
+          <line x1="12" y1="19.5" x2="12" y2="22"></line>
+          <line x1="4.22" y1="4.22" x2="5.95" y2="5.95"></line>
+          <line x1="18.05" y1="18.05" x2="19.78" y2="19.78"></line>
+          <line x1="2" y1="12" x2="4.5" y2="12"></line>
+          <line x1="19.5" y1="12" x2="22" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.95" y2="18.05"></line>
+          <line x1="18.05" y1="5.95" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path>
+        </svg>
+      </button>
+    </div>
 
     <h1 id="page-title">Contador de remadas</h1>
 
@@ -79,12 +81,13 @@
         <div class="chart-plot">
           <div class="chart-y-axis">
             <span id="chart-y-max"></span>
+            <span id="chart-y-mid"></span>
             <span id="chart-y-min"></span>
           </div>
           <svg id="chart-svg" viewBox="0 0 300 100" preserveAspectRatio="none">
             <line class="chart-gridline" x1="0" y1="50" x2="300" y2="50"></line>
-            <polygon id="chart-area"></polygon>
-            <polyline id="chart-line" points=""></polyline>
+            <g id="chart-area"></g>
+            <g id="chart-line"></g>
             <g id="chart-points"></g>
           </svg>
         </div>
