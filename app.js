@@ -5,6 +5,7 @@
 const display = document.getElementById("spm-display");
 const status = document.getElementById("status");
 const circle = document.getElementById("circle");
+const sphereFx = document.getElementById("sphere-fx");
 const ripples = document.querySelectorAll(".ripple");
 const chartLine = document.getElementById("chart-line");
 const chartArea = document.getElementById("chart-area");
@@ -129,6 +130,34 @@ if (splash) {
     if (e.target === splash) splash.remove();
   });
 }
+
+
+// =============================
+// ESFERA CENTRAL
+// =============================
+// Reemplaza al viejo borde sólido: 18 anillos girando en 3D, un solo
+// color de marca (el color lo pone el CSS según el estado del círculo).
+// Se genera una sola vez al cargar la página.
+
+const SPHERE_RING_COUNT = 18;
+
+function buildSphere() {
+  if (!sphereFx) return;
+  sphereFx.innerHTML = "";
+  const frag = document.createDocumentFragment();
+  for (let i = 1; i <= SPHERE_RING_COUNT; i++) {
+    const ring = document.createElement("div");
+    ring.className = "sphere-ring";
+    const duration = (SPHERE_RING_COUNT * 0.26).toFixed(2); // más lento que antes (0.16)
+    const delay = (i * 0.075).toFixed(3);
+    ring.style.animation = `sphere-spin ${duration}s linear ${delay}s infinite`;
+    ring.style.opacity = (0.05 + i * 0.02).toFixed(3);
+    frag.appendChild(ring);
+  }
+  sphereFx.appendChild(frag);
+}
+
+buildSphere();
 
 
 // =============================
