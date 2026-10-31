@@ -21,6 +21,7 @@ import {
   GENDERS, ROWING_TYPES, SWITCH_ROWING_TYPE, rowingTypeOf,
   boatLabel, programCode, migrateBoat, loadHandicap, suggestOffsets,
 } from "./handicap.js";
+import { SHARE_ICON, openShareSheet, spmText } from "./compartir.js";
 
 const root = $("pasadas-root");
 const flash = $("start-flash");
@@ -45,12 +46,14 @@ const VIBRATE_GO = 400;
 // =============================
 // ESTADO
 // =============================
-// boat:    { id, name, boatClass, category, gender (M|F|MX), offset (s), auto, color, prevOffset? }
+// boat:    { id, name, boatClass, category, gender (M|F|MX), offset (s), auto, color, prevOffset?,
+//            spm: [{ key, spm }] — remadas medidas desde Entreno durante la pasada }
 // arrival: { id, ms (desde la primera salida), boatId | null }
 
 function freshPasada() {
   return {
     phase: "setup",       // setup | running | results
+    name: "",             // trabajo, opcional (ej. "3×500 a 28")
     distance: 1000,
     boats: [],
     startedAt: null,      // Date.now() de la primera salida (t = 0)
@@ -133,6 +136,11 @@ function renderSetup() {
 
   root.innerHTML = `
     <h1 class="large-title">Pasadas</h1>
+
+    <label class="field">
+      <span class="field-label">Trabajo (opcional)</span>
+      <input type="text" data-work-name value="${escapeHtml(p.name)}" maxlength="40" autocomplete="off" placeholder="Ej: 3×500 a 28">
+    </label>
 
     <div class="group-label">Distancia (metros)</div>
     <div class="segmented">
@@ -302,7 +310,10 @@ function changeOffset(id, delta) {
 function startPasada() {
   unlockAudio();
   requestWakeLock();
-  p.boats.forEach((b) => delete b.prevOffset);
+  p.boats.forEach((b) => {
+    delete b.prevOffset;
+    b.spm = [];
+  });
   p.phase = "running";
   p.startedAt = Date.now() + PRE_START_MS;
   p.arrivals = [];
@@ -594,11 +605,13 @@ function syncHistory() {
   const { rows, missing } = computeResults();
   const plain = (b) => ({
     name: b.name, color: b.color, boatClass: b.boatClass, category: b.category, gender: b.gender, offset: b.offset,
+    spm: (b.spm || []).map((r) => ({ spm: r.spm })),
   });
   history.upsert({
     id: p.historyId,
     type: "pasada",
     date: p.startedAt,
+    name: p.name.trim(),
     distance: p.distance,
     results: rows.map((r) => ({ ...plain(r.boat), arrivalMs: r.arrival.ms, timeMs: r.timeMs, gapMs: r.gapMs })),
     missing: missing.map(plain),
@@ -613,6 +626,7 @@ export function resultRowsMarkup(results, missing) {
         <span class="boat-text">
           <span class="boat-name">${escapeHtml(r.name)}</span>
           <span class="boat-sub">${escapeHtml(boatLabel(r))} · salió ${formatOffset(r.offset)}</span>
+          ${r.spm && r.spm.length ? `<span class="boat-spm">${spmText(r.spm)}</span>` : ""}
         </span>
         <span class="result-time">${formatClock(r.timeMs)}<small>${formatGap(r.gapMs)}</small></span>
       </div>`).join("") +
@@ -636,7 +650,7 @@ function renderResults() {
 
   root.innerHTML = `
     <h1 class="large-title">Resultados</h1>
-    <p class="subtitle">${p.distance} m · ${p.boats.length} ${p.boats.length === 1 ? "bote" : "botes"} · guardada en Historial</p>
+    <p class="subtitle">${p.name.trim() ? `${escapeHtml(p.name.trim())} · ` : ""}${p.distance} m · ${p.boats.length} ${p.boats.length === 1 ? "bote" : "botes"} · guardada en Historial</p>
 
     ${unassigned.length ? `
       <div class="group-label">Llegadas sin asignar</div>
@@ -648,6 +662,7 @@ function renderResults() {
     <div class="list">${resultRowsMarkup(results, missing)}</div>
     <p class="footnote">Con salida escalonada, el orden de llegada ya es el resultado con handicap. El tiempo es lo que tardó cada bote desde su propia salida. Tocá una fila para corregir la asignación.</p>
 
+    <button type="button" class="btn btn-secondary btn-share" data-action="share">${SHARE_ICON} Compartir resultados</button>
     <button type="button" class="btn btn-primary" data-action="adjust" ${rows.length < 2 ? "disabled" : ""}>Ajustar ventajas y repetir</button>
     <button type="button" class="btn btn-secondary" data-action="again">Repetir con las mismas ventajas</button>`;
 }
@@ -683,6 +698,11 @@ function repeatSame() {
   renderPasadas();
 }
 
+function shareResults() {
+  const entry = history.list().find((e) => e.id === p.historyId);
+  if (entry) openShareSheet([entry]);
+}
+
 
 // =============================
 // EVENTOS E INICIO
@@ -702,6 +722,7 @@ const ACTIONS = {
   assign: (id) => openAssign(id),
   adjust: () => adjustAndRepeat(),
   again: () => repeatSame(),
+  share: () => shareResults(),
 };
 
 export function renderPasadas() {
@@ -720,7 +741,31 @@ export function isPasadaRunning() {
   return p.phase === "running";
 }
 
+// SPM medido en Entreno durante la pasada. Cada medición (key) se anota
+// a un solo bote: tocar otro bote la mueve (por si se tocó el equivocado),
+// y tocar el mismo actualiza el valor si se siguió midiendo.
+export function runningBoats() {
+  return p.phase === "running" ? p.boats : [];
+}
+
+export function recordBoatSpm(boatId, spm, key) {
+  const boat = boatById(boatId);
+  if (p.phase !== "running" || !boat) return;
+  p.boats.forEach((b) => {
+    b.spm = (b.spm || []).filter((r) => r.key !== key);
+  });
+  boat.spm.push({ key, spm });
+  save();
+}
+
 export function initPasadas() {
+  root.addEventListener("input", (e) => {
+    if (e.target.matches("[data-work-name]")) {
+      p.name = e.target.value;
+      save();
+    }
+  });
+
   root.addEventListener("click", (e) => {
     const el = e.target.closest("[data-action]");
     if (!el || el.disabled) return;

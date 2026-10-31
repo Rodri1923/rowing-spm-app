@@ -15,7 +15,9 @@ A field-use tool: the coach taps the screen on every stroke, and the app convert
 - **Handicap pieces:** staggered starts suggested by boat class, category and gender, editable by hand; countdown with beep, vibration and color flash; a single FINISH button with boat assignment afterwards; results and "adjust handicaps and repeat"
 - **Uruguayan National Circuit categories (FUR):** U11 to Masters, Lightweight and Novice, with Men / Women / Mixed; each boat is picked step by step (sculling or sweep → boat → gender → category) and shows its event code as in the regatta program (`[1x]-SUB19-M`)
 - **Editable handicap table:** reference times per boat class and % per category and gender, from Settings
-- **History:** saved sessions and pieces on the device, with chart and splits
+- **SPM per boat:** while a piece is running, measure in Training and one tap logs the SPM to a boat; it shows in the results
+- **History:** saved sessions and pieces on the device, with chart and splits; optional workout name per piece ("3×500 at 28"); select to delete or share several sessions, and delete everything from Settings
+- **Sharing:** any day, session or result can be sent via WhatsApp as a message, as an image with the club logo or as an `.xlsx` spreadsheet (Excel / Google Sheets), all generated offline
 - High-contrast iOS-style UI (tabs, sheets), light/dark theme, built for use on the water
 - Club Instagram link always visible in the top bar
 - Fully offline (Service Worker + localStorage, no backend)
@@ -24,6 +26,7 @@ A field-use tool: the coach taps the screen on every stroke, and the app convert
 - HTML5 / CSS3
 - Vanilla JavaScript
 - SVG (charts) · Web Audio (start beeps)
+- Canvas (share image) · Web Share API
 - Service Worker (offline / caching)
 - GitHub Pages (deploy)
 
@@ -37,6 +40,7 @@ entreno.js    → SPM counter + stopwatch
 pasadas.js    → handicap pieces
 handicap.js   → category table and start offsets
 historial.js  → session and piece history
+compartir.js  → WhatsApp message, image and spreadsheet
 ajustes.js    → settings and how-to guide
 sw.js         → offline cache
 assets/

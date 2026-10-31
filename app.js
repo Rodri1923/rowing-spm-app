@@ -5,9 +5,9 @@
 // Ajustes. Cada una vive en su propio módulo; acá solo se conectan.
 
 import { $, requestWakeLock } from "./core.js";
-import { initEntreno } from "./entreno.js";
+import { initEntreno, renderSpmBoats } from "./entreno.js";
 import { initPasadas, renderPasadas, isPasadaRunning } from "./pasadas.js";
-import { initHistorial, renderHistorial } from "./historial.js";
+import { initHistorial, showHistorial } from "./historial.js";
 import { initAjustes, openAjustes, openHowTo, shouldShowOnboarding } from "./ajustes.js";
 
 const TABS = ["entreno", "pasadas", "historial"];
@@ -41,8 +41,9 @@ function showTab(name) {
   document.querySelectorAll(".tab").forEach((btn) => {
     btn.setAttribute("aria-selected", String(btn.dataset.tab === name));
   });
+  if (name === "entreno") renderSpmBoats();
   if (name === "pasadas") renderPasadas();
-  if (name === "historial") renderHistorial();
+  if (name === "historial") showHistorial();
   window.scrollTo(0, 0);
 }
 

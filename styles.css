@@ -1944,3 +1944,226 @@ body[data-tab="entreno"].alert #status {
   font-weight: 600;
   line-height: 1.2;
 }
+
+/* =============================
+   COMPARTIR Y SELECCIONAR (Historial)
+============================= */
+
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-share,
+.day-share {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-share svg {
+  width: 20px;
+  height: 20px;
+}
+
+.day-share {
+  min-height: 36px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.day-share svg {
+  width: 17px;
+  height: 17px;
+}
+
+.group-row .group-label {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Círculo de selección, como en Fotos */
+.check {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid var(--separator);
+  color: #fff;
+}
+
+.hist-row[aria-pressed="true"] .check {
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
+}
+
+.hist-row[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--accent-fill) 10%, transparent);
+}
+
+.check svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Acciones de la selección: siempre al alcance, encima de las pestañas */
+.select-bar {
+  position: sticky;
+  bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 12px);
+  z-index: 5;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.select-bar .btn {
+  margin-top: 0;
+  box-shadow: var(--card-shadow);
+}
+
+.select-bar .btn:disabled {
+  opacity: 1;
+  background: var(--surface-raised);
+  color: var(--muted);
+}
+
+.list-row:disabled {
+  opacity: 0.4;
+}
+
+.list-row.danger {
+  color: var(--alert);
+}
+
+.share-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 66px;
+  padding: 10px 14px;
+  background: none;
+  border: 0;
+  color: var(--text);
+  font-family: var(--font-ui);
+  text-align: left;
+}
+
+.share-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  font-size: 1.3rem;
+}
+
+.share-icon.text { background: color-mix(in srgb, #25d366 22%, transparent); }
+.share-icon.image { background: color-mix(in srgb, var(--accent-fill) 22%, transparent); }
+.share-icon.xlsx { background: color-mix(in srgb, var(--go) 22%, transparent); }
+
+
+/* =============================
+   SPM POR BOTE (Entreno, con pasada en curso)
+============================= */
+
+.spm-boats {
+  padding: 10px 12px 12px;
+  text-align: left;
+}
+
+.spm-boats-label {
+  margin: 0 2px 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.spm-boats-label strong {
+  color: var(--text);
+  font-family: var(--font-num);
+  font-size: 1.05rem;
+}
+
+/* Una fila que se desliza de costado: con 10 botes no crece hacia abajo */
+.spm-boats-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 -12px;
+  padding: 0 12px;
+}
+
+.spm-boats-row::-webkit-scrollbar {
+  display: none;
+}
+
+.spm-boat {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 96px;
+  max-width: 150px;
+  min-height: 56px;
+  padding: 6px 12px;
+  border: 1px solid var(--card-border);
+  border-left: 6px solid var(--boat);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-ui);
+  text-align: left;
+  transition: transform 0.1s ease;
+}
+
+.spm-boat:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.spm-boat:disabled {
+  opacity: 0.55;
+}
+
+.spm-boat[aria-pressed="true"] {
+  background: var(--boat);
+  border-color: var(--boat);
+  color: #fff;
+}
+
+.spm-boat-name {
+  max-width: 100%;
+  font-size: 0.92rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spm-boat-value {
+  font-family: var(--font-num);
+  font-size: 1rem;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+.boat-spm {
+  font-family: var(--font-num);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--active);
+}
+
+.select-bar .btn {
+  padding: 0 10px;
+  white-space: nowrap;
+}

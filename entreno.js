@@ -6,11 +6,14 @@
 // corre, cada lectura de SPM se graba junto con las vueltas, y al terminar
 // el entreno queda guardado en el Historial (reemplaza al viejo botón REC:
 // ya no hay que acordarse de grabar).
+// Con una pasada en curso aparecen los botes abajo de la medición: un toque
+// le anota a ese bote el SPM que se acaba de medir.
 
 import {
-  $, vibrate, store, history, uid, toast, requestWakeLock,
+  $, vibrate, store, history, uid, toast, requestWakeLock, escapeHtml,
   formatClock, computeScale, buildChartMarkup,
 } from "./core.js";
+import { runningBoats, recordBoatSpm } from "./pasadas.js";
 
 const view = $("view-entreno");
 const display = $("spm-display");
@@ -28,6 +31,7 @@ const swTime = $("sw-time");
 const swLeft = $("sw-left");
 const swRight = $("sw-right");
 const swLastLap = $("sw-last-lap");
+const spmBoats = $("spm-boats");
 
 
 // =============================
@@ -67,6 +71,8 @@ let intervals = [];
 let spmHistory = [];
 let lastTapTimestamp = 0;
 let spmSeries = []; // { ts, spm, state } — últimos 60s para el gráfico
+let currentSpm = null;  // última lectura válida (para anotarla a un bote)
+let measureKey = null;  // identifica esta medición (de la primera remada al reset)
 
 
 // =============================
@@ -127,6 +133,7 @@ function handleTap() {
 
   if (!lastTapTime) {
     lastTapTime = now;
+    measureKey = uid();
     vibrate(VIBRATE_TAP_MS);
     status.textContent = "Midiendo...";
     setState("warning");
@@ -164,6 +171,7 @@ function handleTap() {
   }
 
   display.textContent = roundedSpm;
+  currentSpm = roundedSpm;
 
   spmHistory.push(roundedSpm);
   if (spmHistory.length > STABILITY_SAMPLES) {
@@ -180,6 +188,7 @@ function handleTap() {
 
   status.textContent = stability.text;
   setState(stability.state);
+  renderSpmBoats();
 }
 
 
@@ -274,12 +283,58 @@ function resetSpm() {
   intervals = [];
   spmHistory = [];
   spmSeries = [];
+  currentSpm = null;
+  measureKey = null;
 
   display.textContent = "CCR";
   status.textContent = IDLE_TEXT;
 
   setState("idle");
   renderChart();
+  renderSpmBoats();
+}
+
+
+// =============================
+// SPM POR BOTE (con una pasada en curso)
+// =============================
+// Se mide como siempre y después se toca el bote: no hay que elegirlo
+// antes. Si no se toca ninguno, la medición no se anota a nadie.
+
+export function renderSpmBoats() {
+  const boats = runningBoats();
+  spmBoats.hidden = boats.length === 0;
+  if (!boats.length) return;
+
+  const label = currentSpm === null
+    ? "Pasada en curso · medí un bote y tocalo para anotarle el SPM"
+    : `Anotar <strong>${currentSpm} spm</strong> a:`;
+
+  spmBoats.innerHTML = `
+    <div class="spm-boats-label">${label}</div>
+    <div class="spm-boats-row">
+      ${boats.map((b) => {
+        const readings = b.spm || [];
+        const mine = readings.some((r) => r.key === measureKey);
+        const last = readings[readings.length - 1];
+        return `
+          <button type="button" class="spm-boat" data-boat="${b.id}" style="--boat:${b.color}"
+            aria-pressed="${mine}" ${currentSpm === null ? "disabled" : ""}>
+            <span class="spm-boat-name">${escapeHtml(b.name)}</span>
+            <span class="spm-boat-value">${last ? `${last.spm} spm` : "–"}</span>
+          </button>`;
+      }).join("")}
+    </div>`;
+}
+
+function assignSpm(boatId) {
+  if (currentSpm === null || !measureKey) return;
+  const boat = runningBoats().find((b) => b.id === boatId);
+  if (!boat) return;
+  recordBoatSpm(boatId, currentSpm, measureKey);
+  vibrate(VIBRATE_SW_LAP);
+  toast(`${currentSpm} spm → ${boat.name}`);
+  renderSpmBoats();
 }
 
 
@@ -467,6 +522,13 @@ export function initEntreno() {
   status.textContent = IDLE_TEXT;
 
   view.addEventListener("click", handleTap);
+
+  // Tocar la tarjeta de botes no cuenta como remada
+  spmBoats.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const btn = e.target.closest("[data-boat]");
+    if (btn && !btn.disabled) assignSpm(btn.dataset.boat);
+  });
 
   // Los botones del cronómetro no cuentan como remada
   swRight.addEventListener("click", (e) => { e.stopPropagation(); toggleStopwatch(); });

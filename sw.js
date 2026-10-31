@@ -5,7 +5,7 @@
 // El nombre incluye el scope (la carpeta de la app): en el mismo dominio
 // puede haber otra copia de la app (ej. una versión de prueba) y cada una
 // debe borrar solo sus propios caches viejos, nunca los de la otra.
-const CACHE_VERSION = "spm-app-v14";
+const CACHE_VERSION = "spm-app-v15";
 const CACHE_NAME = `${CACHE_VERSION}@${self.registration.scope}`;
 
 const ASSETS = [
@@ -19,6 +19,7 @@ const ASSETS = [
   "./handicap.js",
   "./historial.js",
   "./ajustes.js",
+  "./compartir.js",
   "./manifest.json",
   "./assets/fonts/oswald-latin-variable.woff2",
   "./assets/icons/icon-192.png",

@@ -1,11 +1,13 @@
 // =============================
 // AJUSTES Y AYUDA
 // =============================
-// Hoja de Ajustes (tema, tabla de handicap, instalar, link al club) y la
-// guía "Cómo usar", que se muestra sola la primera vez.
+// Hoja de Ajustes (tema, tabla de handicap, datos del historial, instalar,
+// link al club) y la guía "Cómo usar", que se muestra sola la primera vez.
 
-import { store, escapeHtml, openSheet, closeSheet, formatDuration } from "./core.js";
+import { store, history, escapeHtml, openSheet, closeSheet, confirmSheet, toast, formatDuration } from "./core.js";
 import { BOAT_CLASSES, GENDERS, loadHandicap, saveHandicap, resetHandicap } from "./handicap.js";
+import { shareXlsx } from "./compartir.js";
+import { renderHistorial } from "./historial.js";
 
 const THEME_KEY = "theme";
 const ONBOARDED_KEY = "ccr_onboarded";
@@ -79,6 +81,7 @@ function installRow() {
 
 export function openAjustes() {
   const theme = currentTheme();
+  const count = history.list().length;
   const box = openSheet({
     title: "Ajustes",
     content: `
@@ -93,6 +96,13 @@ export function openAjustes() {
       <div class="list">
         <button type="button" class="list-row" data-handicap>Tabla de handicap <span class="chevron">›</span></button>
       </div>
+
+      <div class="group-label">Datos</div>
+      <div class="list">
+        <button type="button" class="list-row" data-export-all ${count ? "" : "disabled"}>Descargar todo el historial (planilla) <span class="chevron">›</span></button>
+        <button type="button" class="list-row danger" data-clear-all ${count ? "" : "disabled"}>Borrar todo el historial</button>
+      </div>
+      <p class="footnote">${count ? `${count} ${count === 1 ? "sesión guardada" : "sesiones guardadas"} en este celular.` : "No hay sesiones guardadas."}</p>
 
       <div class="group-label">App</div>
       <div class="list">
@@ -111,6 +121,10 @@ export function openAjustes() {
       box.querySelectorAll("[data-theme-choice]").forEach((b) => b.setAttribute("aria-pressed", String(b === themeBtn)));
     } else if (e.target.closest("[data-handicap]")) {
       openHandicapEditor();
+    } else if (e.target.closest("[data-export-all]") && count) {
+      shareXlsx(history.list());
+    } else if (e.target.closest("[data-clear-all]") && count) {
+      clearAll(count);
     } else if (e.target.closest("[data-help]")) {
       openHowTo({ onBack: openAjustes });
     } else if (e.target.closest("[data-install]") && deferredInstallPrompt) {
@@ -121,6 +135,20 @@ export function openAjustes() {
       closeSheet();
     }
   });
+}
+
+
+async function clearAll(count) {
+  const ok = await confirmSheet({
+    title: "Borrar todo",
+    message: `Se borran las ${count} sesiones del Historial de este celular y no se pueden recuperar. Si las querés guardar, descargá antes la planilla.`,
+    confirmLabel: "Borrar todo el historial",
+    destructive: true,
+  });
+  if (!ok) return;
+  history.clear();
+  renderHistorial();
+  toast("Historial borrado");
 }
 
 
@@ -233,6 +261,8 @@ export function openHowTo({ onBack = null } = {}) {
         <li><strong>Entreno</strong>Tocá la pantalla en cada remada y ves las remadas por minuto. Doble toque reinicia la medida.</li>
         <li><strong>Cronómetro</strong>VUELTA marca un parcial con su promedio de remadas. Al pausar y TERMINAR, el entreno queda guardado en Historial.</li>
         <li><strong>Pasadas</strong>Cargá los botes y la app sugiere la ventaja de cada uno. LARGAR hace la cuenta regresiva con pitidos. En la llegada tocá LLEGADA cada vez que cruza una proa, y después asignás qué bote era.</li>
+        <li><strong>SPM de cada bote</strong>Con una pasada en curso, medí en Entreno como siempre y tocá el bote: le queda anotado el SPM.</li>
+        <li><strong>Compartir</strong>En Historial, "Compartir" al lado de cada día manda los tiempos por WhatsApp, como imagen o como planilla. "Seleccionar" sirve para elegir o borrar varias sesiones.</li>
         <li><strong>Sin señal</strong>Funciona sin conexión, en el agua. Todo queda guardado en este celular.</li>
       </ol>
       <button type="button" class="btn btn-primary" data-start>Empezar</button>`,

@@ -78,7 +78,14 @@ export const history = {
     }
   },
   remove(id) {
-    store.set(HISTORY_KEY, this.list().filter((e) => e.id !== id));
+    this.removeMany([id]);
+  },
+  removeMany(ids) {
+    const drop = new Set(ids);
+    store.set(HISTORY_KEY, this.list().filter((e) => !drop.has(e.id)));
+  },
+  clear() {
+    store.remove(HISTORY_KEY);
   },
 };
 
