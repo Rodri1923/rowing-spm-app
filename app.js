@@ -24,6 +24,11 @@ const sessionSvg = document.getElementById("session-svg");
 const promoBanner = document.getElementById("promo-banner");
 const installLink = document.getElementById("install-link");
 const installHint = document.getElementById("install-hint");
+const swTime = document.getElementById("sw-time");
+const swStartBtn = document.getElementById("sw-start");
+const swLapBtn = document.getElementById("sw-lap");
+const swResetBtn = document.getElementById("sw-reset");
+const swLaps = document.getElementById("sw-laps");
 
 
 // =============================
@@ -254,6 +259,7 @@ function handleTap() {
   const stability = computeStability();
 
   spmSeries.push({ ts: now, spm: roundedSpm, state: stability.state });
+  stopwatchSample(roundedSpm);
   renderChart();
 
   if (isRecording) {
@@ -670,3 +676,187 @@ sessionView.addEventListener("click", (e) => {
   e.stopPropagation();
   sessionView.hidden = true;
 });
+
+
+// =============================
+// CRONÓMETRO
+// =============================
+// Se calcula siempre como acumulado + (ahora - inicio) con Date.now(), no
+// con un contador de ticks: así no se desfasa si el navegador frena los
+// timers, y el estado se puede guardar y recuperar tras recargar la app.
+// Cada vuelta guarda el parcial y el SPM promedio de las remadas medidas
+// mientras el cronómetro corría en esa vuelta.
+
+const STOPWATCH_KEY = "spm_stopwatch";
+const RESET_CONFIRM_MS = 3000;
+const VISIBLE_LAPS = 4;
+const VIBRATE_SW_START = 30;
+const VIBRATE_SW_PAUSE = [20, 40, 20];
+const VIBRATE_SW_LAP = 40;
+
+// running: corriendo desde startedAt; elapsedBefore: lo acumulado antes
+let sw = {
+  running: false,
+  startedAt: 0,
+  elapsedBefore: 0,
+  laps: [],        // { total, split, avgSpm }  (avgSpm null si no hubo remadas)
+  lapStartMs: 0,   // acumulado en el que arrancó la vuelta actual
+  lapSpmSum: 0,
+  lapSpmCount: 0,
+};
+let swFrame = null;
+let swResetTimer = null;
+
+function swElapsed() {
+  return sw.elapsedBefore + (sw.running ? Date.now() - sw.startedAt : 0);
+}
+
+function formatStopwatch(ms) {
+  const totalTenths = Math.floor(ms / 100);
+  const tenths = totalTenths % 10;
+  const totalSec = Math.floor(totalTenths / 10);
+  const s = totalSec % 60;
+  const m = Math.floor(totalSec / 60) % 60;
+  const h = Math.floor(totalSec / 3600);
+  const mm = String(m).padStart(2, "0");
+  const ss = String(s).padStart(2, "0");
+  return h > 0 ? `${h}:${mm}:${ss}.${tenths}` : `${mm}:${ss}.${tenths}`;
+}
+
+function saveStopwatch() {
+  try {
+    localStorage.setItem(STOPWATCH_KEY, JSON.stringify(sw));
+  } catch (err) {
+    console.warn("No se pudo guardar el cronómetro:", err);
+  }
+}
+
+function loadStopwatch() {
+  try {
+    const raw = localStorage.getItem(STOPWATCH_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data && typeof data.elapsedBefore === "number" && Array.isArray(data.laps)) {
+      sw = { ...sw, ...data };
+    }
+  } catch (err) {
+    // estado corrupto: se arranca de cero
+  }
+}
+
+function renderLaps() {
+  swLaps.hidden = sw.laps.length === 0;
+  // Las más nuevas primero; la lista muestra solo las últimas para no
+  // empujar el gráfico fuera de la pantalla (el resto se ve con scroll).
+  swLaps.innerHTML = sw.laps
+    .map((lap, i) => {
+      const avg = lap.avgSpm === null ? "–" : lap.avgSpm;
+      return `<li><span class="sw-lap-n">${i + 1}</span>` +
+        `<span class="sw-lap-split">${formatStopwatch(lap.split)}</span>` +
+        `<span class="sw-lap-spm">${avg} <small>spm</small></span>` +
+        `<span class="sw-lap-total">${formatStopwatch(lap.total)}</span></li>`;
+    })
+    .reverse()
+    .join("");
+  swLaps.style.maxHeight = `${VISIBLE_LAPS * 40}px`;
+}
+
+function renderStopwatchButtons() {
+  const started = sw.running || sw.elapsedBefore > 0;
+  swStartBtn.textContent = sw.running ? "PAUSAR" : started ? "CONTINUAR" : "INICIAR";
+  swStartBtn.classList.toggle("sw-pause", sw.running);
+  swLapBtn.disabled = !sw.running;
+  swResetBtn.disabled = !started;
+}
+
+function tickStopwatch() {
+  swTime.textContent = formatStopwatch(swElapsed());
+  swFrame = sw.running ? requestAnimationFrame(tickStopwatch) : null;
+}
+
+function startTicking() {
+  if (swFrame === null) swFrame = requestAnimationFrame(tickStopwatch);
+}
+
+function cancelResetConfirm() {
+  clearTimeout(swResetTimer);
+  swResetTimer = null;
+  swResetBtn.textContent = "REINICIAR";
+  swResetBtn.classList.remove("sw-confirm");
+}
+
+function toggleStopwatch() {
+  if (sw.running) {
+    sw.elapsedBefore = swElapsed();
+    sw.running = false;
+    vibrate(VIBRATE_SW_PAUSE);
+  } else {
+    sw.startedAt = Date.now();
+    sw.running = true;
+    vibrate(VIBRATE_SW_START);
+    startTicking();
+  }
+  cancelResetConfirm();
+  saveStopwatch();
+  renderStopwatchButtons();
+  swTime.textContent = formatStopwatch(swElapsed());
+}
+
+function lapStopwatch() {
+  if (!sw.running) return;
+  const total = swElapsed();
+  sw.laps.push({
+    total,
+    split: total - sw.lapStartMs,
+    avgSpm: sw.lapSpmCount ? Math.round(sw.lapSpmSum / sw.lapSpmCount) : null,
+  });
+  sw.lapStartMs = total;
+  sw.lapSpmSum = 0;
+  sw.lapSpmCount = 0;
+  vibrate(VIBRATE_SW_LAP);
+  saveStopwatch();
+  renderLaps();
+}
+
+// Reiniciar pide un segundo toque: con salpicaduras o guantes, un toque
+// accidental no debe borrar los parciales de una pasada.
+function resetStopwatch() {
+  if (swResetTimer === null) {
+    swResetBtn.textContent = "¿SEGURO?";
+    swResetBtn.classList.add("sw-confirm");
+    swResetTimer = setTimeout(cancelResetConfirm, RESET_CONFIRM_MS);
+    vibrate(VIBRATE_SW_LAP);
+    return;
+  }
+  cancelResetConfirm();
+  sw = { running: false, startedAt: 0, elapsedBefore: 0, laps: [], lapStartMs: 0, lapSpmSum: 0, lapSpmCount: 0 };
+  vibrate(VIBRATE_RESET_PATTERN);
+  saveStopwatch();
+  renderLaps();
+  renderStopwatchButtons();
+  swTime.textContent = formatStopwatch(0);
+}
+
+// Lo llama handleTap con cada lectura válida de SPM
+function stopwatchSample(spm) {
+  if (!sw.running) return;
+  sw.lapSpmSum += spm;
+  sw.lapSpmCount++;
+  saveStopwatch();
+}
+
+swStartBtn.addEventListener("click", (e) => { e.stopPropagation(); toggleStopwatch(); });
+swLapBtn.addEventListener("click", (e) => { e.stopPropagation(); lapStopwatch(); });
+swResetBtn.addEventListener("click", (e) => { e.stopPropagation(); resetStopwatch(); });
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  swTime.textContent = formatStopwatch(swElapsed());
+  if (sw.running) startTicking();
+});
+
+loadStopwatch();
+renderLaps();
+renderStopwatchButtons();
+swTime.textContent = formatStopwatch(swElapsed());
+if (sw.running) startTicking();

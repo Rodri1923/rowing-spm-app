@@ -2,7 +2,7 @@
 // CONFIG
 // =============================
 
-const CACHE_NAME = "spm-app-v10";
+const CACHE_NAME = "spm-app-v11";
 
 const ASSETS = [
   "./",

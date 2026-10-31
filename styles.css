@@ -947,3 +947,98 @@ body.alert #help {
     opacity: 0;
   }
 }
+
+
+/* =============================
+   CRONÓMETRO
+============================= */
+
+.stopwatch-card {
+  padding: 18px 16px 16px;
+}
+
+#sw-time {
+  font-family: "Oswald", sans-serif;
+  font-size: clamp(3rem, 17vw, 4.6rem);
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+
+.sw-controls {
+  display: flex;
+  gap: 8px;
+}
+
+/* Botones grandes (>=56px): se tocan con manos mojadas o guantes */
+.sw-btn {
+  flex: 1;
+  min-height: 56px;
+  border-radius: 18px;
+  border: 2px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text);
+  font-family: "Oswald", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sw-start {
+  flex: 1.6;
+  border-color: var(--active);
+  color: var(--active);
+}
+
+.sw-start.sw-pause {
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+.sw-reset {
+  font-size: 0.8rem;
+  border-color: var(--alert);
+  color: var(--alert);
+}
+
+.sw-reset.sw-confirm {
+  background: var(--alert);
+  color: #fff;
+}
+
+.sw-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.sw-btn:disabled {
+  opacity: 0.35;
+}
+
+#sw-laps {
+  list-style: none;
+  margin-top: 12px;
+  overflow-y: auto;
+  border-top: 1px solid var(--card-border);
+}
+
+#sw-laps li {
+  display: grid;
+  grid-template-columns: 1.6em 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  border-bottom: 1px solid var(--grid-line);
+  font-family: "Oswald", sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.sw-lap-n { color: var(--muted); font-size: 0.85rem; }
+.sw-lap-split { font-size: 1.15rem; font-weight: 600; color: var(--text); }
+.sw-lap-spm { font-size: 1.05rem; font-weight: 600; color: var(--active); text-align: right; }
+.sw-lap-spm small { font-size: 0.65rem; font-weight: 500; color: var(--muted); }
+.sw-lap-total { font-size: 0.85rem; color: var(--muted); text-align: right; }

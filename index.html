@@ -69,6 +69,16 @@
       <div id="status">Esperando medida</div>
     </div>
 
+    <div class="glass-card stopwatch-card" id="stopwatch-card">
+      <div id="sw-time" aria-live="off">00:00.0</div>
+      <div class="sw-controls">
+        <button id="sw-start" type="button" class="sw-btn sw-start">INICIAR</button>
+        <button id="sw-lap" type="button" class="sw-btn sw-lap" disabled>VUELTA</button>
+        <button id="sw-reset" type="button" class="sw-btn sw-reset" disabled>REINICIAR</button>
+      </div>
+      <ol id="sw-laps" hidden></ol>
+    </div>
+
     <div class="glass-card chart-card" id="chart-card">
       <div class="chart-header">
         <button id="record-btn" type="button" aria-label="Grabar una serie" aria-pressed="false">
@@ -104,6 +114,7 @@
       <p><strong>Cómo usar</strong></p>
       <p>Tocá cada remada · Doble tap reinicia</p>
       <p>Botón REC graba una serie · Botón Ver la muestra</p>
+      <p>Cronómetro: Iniciar · Vuelta marca un parcial con su SPM promedio</p>
     </div>
 
     <a id="promo-banner" href="https://www.instagram.com/clubcoloniarowing/?hl=es" target="_blank" rel="noopener noreferrer">
