@@ -2,7 +2,11 @@
 // CONFIG
 // =============================
 
-const CACHE_NAME = "spm-app-v12";
+// El nombre incluye el scope (la carpeta de la app): en el mismo dominio
+// puede haber otra copia de la app (ej. una versión de prueba) y cada una
+// debe borrar solo sus propios caches viejos, nunca los de la otra.
+const CACHE_VERSION = "spm-app-v12";
+const CACHE_NAME = `${CACHE_VERSION}@${self.registration.scope}`;
 
 const ASSETS = [
   "./",
@@ -49,7 +53,7 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) {
+          if (key !== CACHE_NAME && key.endsWith(`@${self.registration.scope}`)) {
             return caches.delete(key);
           }
         })

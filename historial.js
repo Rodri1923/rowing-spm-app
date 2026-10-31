@@ -15,13 +15,16 @@ const root = $("historial-root");
 const ICON_ENTRENO = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6M12 2v3"/></svg>`;
 const ICON_PASADA = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>`;
 
-// Grabación del viejo botón REC (versiones anteriores): se convierte en un
-// entreno del Historial una sola vez, para no perderla.
+// Grabación del viejo botón REC (versiones anteriores): se copia una sola
+// vez como entreno del Historial. La original NO se borra: otra copia de
+// la app en el mismo dominio (ej. la versión publicada) puede seguir
+// usándola.
 const OLD_RECORDING_KEY = "spm_recording";
+const MIGRATED_KEY = "ccr_recording_migrated";
 
 function migrateOldRecording() {
   const old = store.get(OLD_RECORDING_KEY, null);
-  if (!old) return;
+  if (!old || store.get(MIGRATED_KEY, false)) return;
   if (Array.isArray(old.points) && old.points.length >= 2) {
     const durationMs = (old.durationSec || 0) * 1000;
     history.upsert({
@@ -33,7 +36,7 @@ function migrateOldRecording() {
       samples: old.points,
     });
   }
-  store.remove(OLD_RECORDING_KEY);
+  store.set(MIGRATED_KEY, true);
 }
 
 function dayLabel(ts) {
