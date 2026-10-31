@@ -209,6 +209,7 @@ body[data-tab="entreno"].alert #status {
 }
 
 .round-btn {
+  flex-shrink: 0;
   width: 42px;
   height: 42px;
   border-radius: 50%;
@@ -1886,4 +1887,60 @@ body[data-tab="entreno"].alert #status {
   font-size: 0.7rem;
   font-weight: 500;
   color: var(--muted);
+}
+
+/* =============================
+   LINK AL CLUB (barra superior)
+============================= */
+/* Visible en todas las pestañas sin quitarle lugar a Entreno: ocupa el
+   espacio libre entre el logo y el engranaje. Mismo vidrio que el botón
+   de Ajustes; el ícono lleva los colores de Instagram para reconocerlo
+   de un vistazo. */
+
+#club-link {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 42px;
+  margin: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px 5px 5px;
+  border-radius: 21px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--text);
+  text-decoration: none;
+  transition: transform 0.1s ease;
+}
+
+#club-link:active {
+  transform: scale(0.97);
+}
+
+.ig-icon {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #fff;
+  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+}
+
+.ig-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.club-link-text {
+  text-wrap: balance; /* "Seguí al mejor / club del mundo", sin una palabra sola */
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
 }
