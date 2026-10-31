@@ -2,10 +2,20 @@
 <html lang="es" data-theme="light">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>SPM</title>
 
   <meta name="theme-color" content="#eef2f8">
+
+  <script>
+    // Tema antes de pintar, para que no parpadee al abrir
+    try {
+      if (localStorage.getItem("theme") === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+        document.querySelector('meta[name="theme-color"]').setAttribute("content", "#000000");
+      }
+    } catch (e) {}
+  </script>
 
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="assets/icons/icon-192.png" type="image/png">
@@ -15,9 +25,10 @@
   <meta name="apple-mobile-web-app-title" content="SPM">
 
   <link rel="stylesheet" href="styles.css" />
+  <script type="module" src="app.js"></script>
 </head>
 
-<body>
+<body data-tab="entreno">
 
   <div id="splash" aria-hidden="true">
     <div class="splash-rings">
@@ -30,66 +41,43 @@
     <div id="splash-tagline">Contador de remadas</div>
   </div>
 
+  <header id="top-bar">
+    <img id="brand-logo" src="assets/logo-wordmark.png" alt="Club Colonia Rowing">
+    <button id="settings-btn" class="round-btn" type="button" aria-label="Ajustes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+    </button>
+  </header>
+
   <main id="app">
 
-    <div id="top-bar">
-      <img id="brand-logo" src="assets/logo-wordmark.png" alt="Logo del club">
+    <!-- ENTRENO: tocar en cualquier lugar que no sea un botón = una remada -->
+    <section id="view-entreno" class="view" aria-label="Entreno">
 
-      <button id="theme-toggle" type="button" aria-label="Cambiar tema">
-        <svg id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden>
-          <circle cx="12" cy="12" r="4"></circle>
-          <line x1="12" y1="2" x2="12" y2="4.5"></line>
-          <line x1="12" y1="19.5" x2="12" y2="22"></line>
-          <line x1="4.22" y1="4.22" x2="5.95" y2="5.95"></line>
-          <line x1="18.05" y1="18.05" x2="19.78" y2="19.78"></line>
-          <line x1="2" y1="12" x2="4.5" y2="12"></line>
-          <line x1="19.5" y1="12" x2="22" y2="12"></line>
-          <line x1="4.22" y1="19.78" x2="5.95" y2="18.05"></line>
-          <line x1="18.05" y1="5.95" x2="19.78" y2="4.22"></line>
-        </svg>
-        <svg id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path>
-        </svg>
-      </button>
-    </div>
-
-    <h1 id="page-title">Contador de remadas</h1>
-
-    <div class="glass-card hero-card">
-      <div id="circle" class="idle">
-        <div id="sphere-fx" aria-hidden="true"></div>
-        <div class="ripple ripple-1"></div>
-        <div class="ripple ripple-2"></div>
-        <div class="ripple ripple-3"></div>
-        <div id="spm-display" class="idle">CCR</div>
+      <div class="glass-card hero-card">
+        <div id="circle" class="idle">
+          <div id="sphere-fx" aria-hidden="true"></div>
+          <div class="ripple ripple-1"></div>
+          <div class="ripple ripple-2"></div>
+          <div class="ripple ripple-3"></div>
+          <div id="spm-display" class="idle">CCR</div>
+        </div>
+        <div id="unit">REMADAS/MIN</div>
+        <div id="status" aria-live="polite"></div>
       </div>
 
-      <div id="unit">REMADAS/MIN</div>
-
-      <div id="status">Esperando medida</div>
-    </div>
-
-    <div class="glass-card stopwatch-card" id="stopwatch-card">
-      <div id="sw-time" aria-live="off">00:00.0</div>
-      <div class="sw-controls">
-        <button id="sw-start" type="button" class="sw-btn sw-start">INICIAR</button>
-        <button id="sw-lap" type="button" class="sw-btn sw-lap" disabled>VUELTA</button>
-        <button id="sw-reset" type="button" class="sw-btn sw-reset" disabled>REINICIAR</button>
-      </div>
-      <ol id="sw-laps" hidden></ol>
-    </div>
-
-    <div class="glass-card chart-card" id="chart-card">
-      <div class="chart-header">
-        <button id="record-btn" type="button" aria-label="Grabar una serie" aria-pressed="false">
-          <span id="record-dot"></span>
-          REC
-        </button>
-        <span class="chart-header-caption">Grabá una serie</span>
-        <button id="view-session-btn" type="button" aria-label="Ver la última grabación guardada">Ver</button>
+      <div class="glass-card stopwatch-card">
+        <div id="sw-time">00:00.0</div>
+        <div class="sw-controls">
+          <button id="sw-left" type="button" class="sw-btn" disabled>VUELTA</button>
+          <button id="sw-right" type="button" class="sw-btn sw-go">INICIAR</button>
+        </div>
+        <div id="sw-last-lap" class="sw-last-lap"></div>
       </div>
 
-      <div id="chart">
+      <div class="glass-card chart-card">
         <div class="chart-plot">
           <div class="chart-y-axis">
             <span id="chart-y-max"></span>
@@ -108,35 +96,50 @@
           <span>ahora</span>
         </div>
       </div>
-    </div>
 
-    <div id="help">
-      <p><strong>Cómo usar</strong></p>
-      <p>Tocá cada remada · Doble tap reinicia</p>
-      <p>Botón REC graba una serie · Botón Ver la muestra</p>
-      <p>Cronómetro: Iniciar · Vuelta marca un parcial con su SPM promedio</p>
-    </div>
+    </section>
 
-    <a id="promo-banner" href="https://www.instagram.com/clubcoloniarowing/?hl=es" target="_blank" rel="noopener noreferrer">
-      Conocé el mejor club de remo del mundo →
-    </a>
+    <section id="view-pasadas" class="view" aria-label="Pasadas" hidden>
+      <div id="pasadas-root"></div>
+    </section>
 
-    <button id="install-link" type="button" hidden>Agregar la app a la pantalla de inicio →</button>
-    <div id="install-hint" hidden>Para instalarla: tocá compartir → "Agregar a inicio"</div>
+    <section id="view-historial" class="view" aria-label="Historial" hidden>
+      <h1 class="large-title">Historial</h1>
+      <div id="historial-root"></div>
+    </section>
 
   </main>
 
-  <div id="session-view" hidden>
-    <div id="session-view-card">
-      <div id="session-view-title"></div>
-      <div class="chart-plot">
-        <svg id="session-svg" viewBox="0 0 400 220"></svg>
-      </div>
-      <div id="session-view-hint">Tocá para cerrar</div>
-    </div>
+  <nav id="tabbar" aria-label="Secciones">
+    <button class="tab" type="button" data-tab="entreno" aria-selected="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6M12 2v3"/></svg>
+      <span>Entreno</span>
+    </button>
+    <button class="tab" type="button" data-tab="pasadas" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>
+      <span>Pasadas</span>
+    </button>
+    <button class="tab" type="button" data-tab="historial" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>
+      <span>Historial</span>
+    </button>
+  </nav>
+
+  <div id="start-flash" aria-hidden="true"></div>
+
+  <div id="sheet-layer" hidden>
+    <div id="sheet-backdrop"></div>
+    <section id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <header class="sheet-header">
+        <button id="sheet-back" type="button" class="link-btn" hidden>‹ Atrás</button>
+        <h2 id="sheet-title"></h2>
+        <button id="sheet-done" type="button" class="link-btn strong">Listo</button>
+      </header>
+      <div id="sheet-body"></div>
+    </section>
   </div>
 
-  <script src="app.js"></script>
+  <div id="toast" role="status" aria-live="polite"></div>
 
   <script>
     if ("serviceWorker" in navigator) {

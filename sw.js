@@ -2,13 +2,19 @@
 // CONFIG
 // =============================
 
-const CACHE_NAME = "spm-app-v11";
+const CACHE_NAME = "spm-app-v12";
 
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
+  "./core.js",
+  "./entreno.js",
+  "./pasadas.js",
+  "./handicap.js",
+  "./historial.js",
+  "./ajustes.js",
   "./manifest.json",
   "./assets/fonts/oswald-latin-variable.woff2",
   "./assets/icons/icon-192.png",

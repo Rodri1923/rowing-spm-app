@@ -10,16 +10,17 @@
 Herramienta de uso en campo: el entrenador tapea la pantalla en cada remada y la app convierte el intervalo entre taps en SPM, evaluando además la estabilidad del ritmo. Pensada para funcionar de forma confiable al aire libre, con una sola mano, en una lancha en movimiento y con alta luminosidad.
 
 ## 🚀 Funcionalidades
-- Cálculo de SPM en tiempo real a partir de taps en pantalla
-- Clasificación automática del ritmo: Midiendo → Ajustando → Inestable → Estable
-- Gráfico de historial en tiempo real, scrollable y con escala dinámica
-- UI de alto contraste pensada para visibilidad al aire libre
-- Funcionamiento offline mediante Service Worker
+- **Entreno:** SPM en tiempo real a partir de taps, con clasificación del ritmo (Midiendo → Ajustando → Inestable → Estable) y gráfico de los últimos 60 s
+- **Cronómetro:** vueltas con parcial y SPM promedio por vuelta; el entreno se guarda solo al terminar
+- **Pasadas con handicap:** salida escalonada sugerida por tipo de bote y categoría (FUR), editable a mano; cuenta regresiva con pitido, vibración y destello de color; botón único de LLEGADA y asignación posterior de cada bote; resultados y "ajustar ventajas y repetir"
+- **Historial:** entrenos y pasadas guardados en el celular, con gráfico y parciales
+- UI de alto contraste, tema claro/oscuro, pensada para usar en el agua
+- Funciona 100% offline (Service Worker + localStorage, sin backend)
 
 ## 🧱 Stack técnico
 - HTML5 / CSS3
 - JavaScript (Vanilla)
-- Canvas API (gráfico)
+- SVG (gráficos) · Web Audio (pitidos de largada)
 - Service Worker (offline / cache)
 - GitHub Pages (deploy)
 
@@ -27,14 +28,19 @@ Herramienta de uso en campo: el entrenador tapea la pantalla en cada remada y la
 ```
 index.html
 styles.css
-app.js
-sw.js
+app.js        → arranque y pestañas
+core.js       → utilidades compartidas (guardado, hojas, sonido, gráficos)
+entreno.js    → contador de SPM + cronómetro
+pasadas.js    → pasadas con handicap
+handicap.js   → tabla de categorías y cálculo de ventajas
+historial.js  → historial de entrenos y pasadas
+ajustes.js    → ajustes y guía de uso
+sw.js         → cache offline
 assets/
-  logo.png
 ```
 
 ## ▶️ Cómo ejecutar
-Abrí `index.html` en el navegador, o servilo localmente:
+Usa módulos ES, así que hay que servirla (no abre con doble clic en `index.html`):
 ```bash
 npx http-server .
 ```
@@ -42,7 +48,9 @@ npx http-server .
 ## ⚠️ Limitaciones
 - La precisión depende de qué tan exacto tapea el usuario
 - No reemplaza sensores físicos
-- Optimizada para sesiones cortas con feedback inmediato, no para registro de datos de largo plazo
+- Los datos viven solo en el celular donde se usan (sin sincronización entre dispositivos)
+- Las ventajas sugeridas por categoría son aproximadas: conviene calibrarlas con las propias pasadas
+- En iPhone no hay vibración, y los pitidos no suenan con el interruptor de silencio activado
 
 ## 👤 Autor
 **Rodrigo Navone**
