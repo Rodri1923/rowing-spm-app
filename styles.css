@@ -1866,3 +1866,24 @@ body[data-tab="entreno"].alert #status {
     animation-duration: 0.4s;
   }
 }
+
+/* Código de prueba como en el programa de regata: "[1x]-SUB19-M" */
+.program-code {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--fill);
+  font-family: var(--font-num);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.segmented button small {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--muted);
+}

@@ -17,7 +17,10 @@ import {
   formatClock, formatOffset, formatGap, formatDuration,
   openSheet, closeSheet, confirmSheet, beep, unlockAudio, requestWakeLock,
 } from "./core.js";
-import { BOAT_CLASSES, loadHandicap, suggestOffsets } from "./handicap.js";
+import {
+  GENDERS, ROWING_TYPES, SWITCH_ROWING_TYPE, rowingTypeOf,
+  boatLabel, programCode, migrateBoat, loadHandicap, suggestOffsets,
+} from "./handicap.js";
 
 const root = $("pasadas-root");
 const flash = $("start-flash");
@@ -42,7 +45,7 @@ const VIBRATE_GO = 400;
 // =============================
 // ESTADO
 // =============================
-// boat:    { id, name, boatClass, category, offset (s), auto, color, prevOffset? }
+// boat:    { id, name, boatClass, category, gender (M|F|MX), offset (s), auto, color, prevOffset? }
 // arrival: { id, ms (desde la primera salida), boatId | null }
 
 function freshPasada() {
@@ -64,7 +67,8 @@ let events = [];   // [{ ms, long, start }] pitidos de cuenta regresiva
 
 function loadPasada() {
   const data = store.get(PASADA_KEY, null);
-  return data && Array.isArray(data.boats) ? { ...freshPasada(), ...data } : freshPasada();
+  if (!data || !Array.isArray(data.boats)) return freshPasada();
+  return { ...freshPasada(), ...data, boats: data.boats.map(migrateBoat) };
 }
 
 function save() {
@@ -116,7 +120,7 @@ function renderSetup() {
           ${boatDot(b)}
           <span class="boat-text">
             <span class="boat-name">${escapeHtml(b.name)}</span>
-            <span class="boat-sub">${b.boatClass} · ${escapeHtml(b.category)}</span>
+            <span class="boat-sub">${escapeHtml(boatLabel(b))}</span>
           </span>
         </button>
         <div class="stepper">
@@ -157,6 +161,7 @@ function addBoat() {
     name: `Bote ${p.boats.length + 1}`,
     boatClass: last ? last.boatClass : "1x",
     category: last ? last.category : "Senior",
+    gender: last ? last.gender : "M",
     offset: 0,
     auto: true,
     color: nextColor(),
@@ -176,21 +181,41 @@ function openBoatEditor(id) {
     ? cfg.categories
     : [{ name: b.category }, ...cfg.categories];
 
+  // Se elige por pasos, en el orden en que se piensa un bote:
+  // remo corto/largo → bote → rama → categoría. Cada paso muestra solo las
+  // opciones que corresponden, así nunca hay que buscar en una lista larga.
+  // Arriba, el código tal como figura en el programa de regata.
+  const choices = () => {
+    const type = rowingTypeOf(b.boatClass);
+    const boats = ROWING_TYPES.find((t) => t.id === type).boats;
+    return `
+      <div class="program-code">${escapeHtml(programCode(b))}</div>
+      <div class="group-label">Remo</div>
+      <div class="segmented">
+        ${ROWING_TYPES.map((t) => `<button type="button" data-type="${t.id}" aria-pressed="${t.id === type}">${t.label}</button>`).join("")}
+      </div>
+      <div class="group-label">Bote</div>
+      <div class="segmented">
+        ${boats.map((x) => `<button type="button" data-class="${x.id}" aria-pressed="${b.boatClass === x.id}">${x.label}<small>${x.id}</small></button>`).join("")}
+      </div>
+      <div class="group-label">Rama</div>
+      <div class="segmented">
+        ${GENDERS.map((g) => `<button type="button" data-gender="${g.id}" aria-pressed="${b.gender === g.id}">${g.label}</button>`).join("")}
+      </div>
+      <div class="group-label">Categoría</div>
+      <div class="chips">
+        ${categories.map((c) => `<button type="button" class="chip" data-cat="${escapeHtml(c.name)}" aria-pressed="${b.category === c.name}">${escapeHtml(c.name)}</button>`).join("")}
+      </div>`;
+  };
+
   const box = openSheet({
     title: "Bote",
     content: `
       <label class="field">
         <span class="field-label">Nombre</span>
-        <input type="text" data-name value="${escapeHtml(b.name)}" maxlength="30" autocomplete="off" placeholder="Ej: 4x de Ana">
+        <input type="text" data-name value="${escapeHtml(b.name)}" maxlength="30" autocomplete="off" placeholder="Ej: Vicente Díaz">
       </label>
-      <div class="group-label">Tipo de bote</div>
-      <div class="segmented seg-wrap">
-        ${BOAT_CLASSES.map((c) => `<button type="button" data-class="${c}" aria-pressed="${b.boatClass === c}">${c}</button>`).join("")}
-      </div>
-      <div class="group-label">Categoría</div>
-      <div class="chips">
-        ${categories.map((c) => `<button type="button" class="chip" data-cat="${escapeHtml(c.name)}" aria-pressed="${b.category === c.name}">${escapeHtml(c.name)}</button>`).join("")}
-      </div>
+      <div data-choices>${choices()}</div>
       <button type="button" class="btn btn-danger-text" data-delete>Eliminar bote</button>`,
     onClose: () => {
       if (boatById(id) && !b.name.trim()) b.name = `Bote ${p.boats.indexOf(b) + 1}`;
@@ -205,14 +230,18 @@ function openBoatEditor(id) {
   });
 
   box.addEventListener("click", (e) => {
+    const typeBtn = e.target.closest("[data-type]");
     const classBtn = e.target.closest("[data-class]");
+    const genderBtn = e.target.closest("[data-gender]");
     const catBtn = e.target.closest("[data-cat]");
-    if (classBtn) {
-      b.boatClass = classBtn.dataset.class;
-      box.querySelectorAll("[data-class]").forEach((x) => x.setAttribute("aria-pressed", String(x === classBtn)));
-    } else if (catBtn) {
-      b.category = catBtn.dataset.cat;
-      box.querySelectorAll("[data-cat]").forEach((x) => x.setAttribute("aria-pressed", String(x === catBtn)));
+    if (typeBtn || classBtn || genderBtn || catBtn) {
+      if (typeBtn && typeBtn.dataset.type !== rowingTypeOf(b.boatClass)) {
+        b.boatClass = SWITCH_ROWING_TYPE[b.boatClass];
+      }
+      if (classBtn) b.boatClass = classBtn.dataset.class;
+      if (genderBtn) b.gender = genderBtn.dataset.gender;
+      if (catBtn) b.category = catBtn.dataset.cat;
+      box.querySelector("[data-choices]").innerHTML = choices();
     } else if (e.target.closest("[data-delete]")) {
       p.boats = p.boats.filter((x) => x.id !== id);
       closeSheet();
@@ -464,7 +493,7 @@ function openAssign(arrivalId) {
     content: `
       <p class="sheet-message">¿Qué bote cruzó?</p>
       <div class="assign-grid">
-        ${free.map((b) => boatButton(b, `${b.boatClass} · ${escapeHtml(b.category)}`)).join("") ||
+        ${free.map((b) => boatButton(b, escapeHtml(boatLabel(b)))).join("") ||
           `<p class="footnote">Todos los botes ya tienen llegada.</p>`}
       </div>
       ${taken.length ? `
@@ -563,7 +592,9 @@ function computeResults() {
 function syncHistory() {
   if (!p.historyId) return;
   const { rows, missing } = computeResults();
-  const plain = (b) => ({ name: b.name, color: b.color, boatClass: b.boatClass, category: b.category, offset: b.offset });
+  const plain = (b) => ({
+    name: b.name, color: b.color, boatClass: b.boatClass, category: b.category, gender: b.gender, offset: b.offset,
+  });
   history.upsert({
     id: p.historyId,
     type: "pasada",
@@ -581,7 +612,7 @@ export function resultRowsMarkup(results, missing) {
         ${boatDot(r)}
         <span class="boat-text">
           <span class="boat-name">${escapeHtml(r.name)}</span>
-          <span class="boat-sub">${r.boatClass} · ${escapeHtml(r.category)} · salió ${formatOffset(r.offset)}</span>
+          <span class="boat-sub">${escapeHtml(boatLabel(r))} · salió ${formatOffset(r.offset)}</span>
         </span>
         <span class="result-time">${formatClock(r.timeMs)}<small>${formatGap(r.gapMs)}</small></span>
       </div>`).join("") +
@@ -591,7 +622,7 @@ export function resultRowsMarkup(results, missing) {
         ${boatDot(b)}
         <span class="boat-text">
           <span class="boat-name">${escapeHtml(b.name)}</span>
-          <span class="boat-sub">${b.boatClass} · ${escapeHtml(b.category)}</span>
+          <span class="boat-sub">${escapeHtml(boatLabel(b))}</span>
         </span>
         <span class="result-time muted">Sin llegada</span>
       </div>`).join("");

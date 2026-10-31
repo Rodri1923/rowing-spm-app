@@ -5,7 +5,7 @@
 // guía "Cómo usar", que se muestra sola la primera vez.
 
 import { store, escapeHtml, openSheet, closeSheet, formatDuration } from "./core.js";
-import { BOAT_CLASSES, loadHandicap, saveHandicap, resetHandicap } from "./handicap.js";
+import { BOAT_CLASSES, GENDERS, loadHandicap, saveHandicap, resetHandicap } from "./handicap.js";
 
 const THEME_KEY = "theme";
 const ONBOARDED_KEY = "ccr_onboarded";
@@ -149,7 +149,7 @@ function openHandicapEditor() {
         </label>`).join("")}
     </div>
 
-    <div class="group-label">Categorías · % del tiempo Senior</div>
+    <div class="group-label">Categorías (Circuito Nacional) · % del tiempo Senior</div>
     <div class="list">
       ${cfg.categories.map((c, i) => `
         <div class="list-row edit-row">
@@ -160,6 +160,15 @@ function openHandicapEditor() {
     </div>
     <p class="footnote">Ej: 110 % = tarda un 10 % más que un Senior en el mismo bote.</p>
     <button type="button" class="btn btn-secondary" data-cat-add>+ Agregar categoría</button>
+
+    <div class="group-label">Rama · % del tiempo masculino</div>
+    <div class="list">
+      ${GENDERS.map((g) => `
+        <label class="list-row edit-row">
+          <span>${g.label}</span>
+          <input type="number" inputmode="numeric" data-gender-factor="${g.id}" value="${cfg.genderFactors[g.id]}" min="50" max="200" aria-label="Porcentaje ${g.label}">
+        </label>`).join("")}
+    </div>
     <button type="button" class="btn btn-danger-text" data-reset>Restablecer valores originales</button>`;
 
   const box = openSheet({ title: "Tabla de handicap", content: render(), onBack: openAjustes });
@@ -181,6 +190,10 @@ function openHandicapEditor() {
       const factor = Math.round(Number(t.value));
       if (factor >= 50 && factor <= 200) cfg.categories[t.dataset.catFactor].factor = factor;
       t.value = cfg.categories[t.dataset.catFactor].factor;
+    } else if (t.dataset.genderFactor) {
+      const factor = Math.round(Number(t.value));
+      if (factor >= 50 && factor <= 200) cfg.genderFactors[t.dataset.genderFactor] = factor;
+      t.value = cfg.genderFactors[t.dataset.genderFactor];
     } else {
       return;
     }
