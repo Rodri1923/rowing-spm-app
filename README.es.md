@@ -12,9 +12,12 @@ Herramienta de uso en campo: el entrenador tapea la pantalla en cada remada y la
 ## 🚀 Funcionalidades
 - **Entreno:** SPM en tiempo real a partir de taps, con clasificación del ritmo (Midiendo → Ajustando → Inestable → Estable) y gráfico de los últimos 60 s
 - **Cronómetro:** vueltas con parcial y SPM promedio por vuelta; el entreno se guarda solo al terminar
-- **Pasadas con handicap:** salida escalonada sugerida por tipo de bote y categoría (FUR), editable a mano; cuenta regresiva con pitido, vibración y destello de color; botón único de LLEGADA y asignación posterior de cada bote; resultados y "ajustar ventajas y repetir"
+- **Pasadas con handicap:** salida escalonada sugerida por tipo de bote, categoría y rama, editable a mano; cuenta regresiva con pitido, vibración y destello de color; botón único de LLEGADA y asignación posterior de cada bote; resultados y "ajustar ventajas y repetir"
+- **Categorías del Circuito Nacional (FUR):** Sub 11 a Master, Peso Ligero y Novicios, con rama Masculino / Femenino / Mixto; cada bote se elige por pasos (remo corto o largo → bote → rama → categoría) y muestra su código como en el programa de regata (`[1x]-SUB19-M`)
+- **Tabla de handicap editable:** tiempos de referencia por bote y % por categoría y rama, desde Ajustes
 - **Historial:** entrenos y pasadas guardados en el celular, con gráfico y parciales
-- UI de alto contraste, tema claro/oscuro, pensada para usar en el agua
+- UI de alto contraste estilo iOS (pestañas, hojas), tema claro/oscuro, pensada para usar en el agua
+- Link al Instagram del club siempre visible en la barra superior
 - Funciona 100% offline (Service Worker + localStorage, sin backend)
 
 ## 🧱 Stack técnico

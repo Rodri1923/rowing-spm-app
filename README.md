@@ -12,9 +12,12 @@ A field-use tool: the coach taps the screen on every stroke, and the app convert
 ## 🚀 Features
 - **Training:** real-time SPM from taps, rhythm classification (Measuring → Adjusting → Unstable → Stable) and a 60 s chart
 - **Stopwatch:** laps with split and average SPM per lap; the session is saved automatically when finished
-- **Handicap pieces:** staggered starts suggested by boat class and category (Uruguayan federation), editable by hand; countdown with beep, vibration and color flash; a single FINISH button with boat assignment afterwards; results and "adjust handicaps and repeat"
+- **Handicap pieces:** staggered starts suggested by boat class, category and gender, editable by hand; countdown with beep, vibration and color flash; a single FINISH button with boat assignment afterwards; results and "adjust handicaps and repeat"
+- **Uruguayan National Circuit categories (FUR):** U11 to Masters, Lightweight and Novice, with Men / Women / Mixed; each boat is picked step by step (sculling or sweep → boat → gender → category) and shows its event code as in the regatta program (`[1x]-SUB19-M`)
+- **Editable handicap table:** reference times per boat class and % per category and gender, from Settings
 - **History:** saved sessions and pieces on the device, with chart and splits
-- High-contrast UI, light/dark theme, built for use on the water
+- High-contrast iOS-style UI (tabs, sheets), light/dark theme, built for use on the water
+- Club Instagram link always visible in the top bar
 - Fully offline (Service Worker + localStorage, no backend)
 
 ## 🧱 Tech Stack
